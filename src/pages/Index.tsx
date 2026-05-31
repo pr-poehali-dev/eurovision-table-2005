@@ -10,15 +10,11 @@ const ALL_PARTICIPANTS = [
   "Артем Дорохов", "Максим Дунин", "Антон Викторович", "Влад Варанкин"
 ];
 
-// Баллы объявляются от меньшего к большему, как на Евровидении
 const VOTE_ORDER = [1, 2, 3, 4, 5, 6, 7, 8, 10, 12];
-
-const ROW_H = 36; // высота одной строки в пикселях
+const ROW_H = 38;
 
 type Phase = "setup" | "voting" | "twelve" | "twelve_then_results" | "results";
-
 interface VoteEntry { voter: string; recipient: string; points: number; }
-
 interface GameState {
   phase: Phase;
   participants: string[];
@@ -33,9 +29,9 @@ interface GameState {
   voteHistory: VoteEntry[];
 }
 
-const STORAGE_KEY = "eurovision2005_v3";
+const STORAGE_KEY = "esc2005_v4";
 
-function getInitialState(): GameState {
+function getInitial(): GameState {
   return {
     phase: "setup", participants: [], voters: [], scores: {},
     currentVoterIndex: 0, currentVotes: {}, pointStep: 0,
@@ -45,77 +41,70 @@ function getInitialState(): GameState {
 
 function loadState(): GameState {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      // Валидация структуры — иначе старые/битые данные ломают рендер
-      if (parsed && Array.isArray(parsed.participants) && parsed.scores && typeof parsed.scores === "object") {
-        return { ...getInitialState(), ...parsed };
+    const s = localStorage.getItem(STORAGE_KEY);
+    if (s) {
+      const p = JSON.parse(s);
+      if (p && Array.isArray(p.participants) && p.scores && typeof p.scores === "object") {
+        return { ...getInitial(), ...p };
       }
     }
   } catch (_e) { /* ignore */ }
-  return getInitialState();
+  return getInitial();
 }
 
-function saveState(s: GameState) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
-}
+function saveState(s: GameState) { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
 
-function sortParticipants(participants: string[], scores: Record<string, number>): string[] {
-  const s = scores || {};
+function sorted(participants: string[], scores: Record<string, number>): string[] {
+  const sc = scores || {};
   return [...(participants || [])].sort((a, b) => {
-    const diff = (s[b] || 0) - (s[a] || 0);
-    return diff !== 0 ? diff : a.localeCompare(b, "ru");
+    const d = (sc[b] || 0) - (sc[a] || 0);
+    return d !== 0 ? d : a.localeCompare(b, "ru");
   });
 }
 
-// ─────────────────────────────────────────────
-// SETUP SCREEN
-// ─────────────────────────────────────────────
+// ── SETUP ──────────────────────────────────────────────────────────────
 function SetupScreen({ onStart }: { onStart: (p: string[], v: string[]) => void }) {
   const [selP, setSelP] = useState<string[]>([...ALL_PARTICIPANTS]);
   const [selV, setSelV] = useState<string[]>([...ALL_PARTICIPANTS]);
-  const toggleP = (n: string) => setSelP(p => p.includes(n) ? p.filter(x => x !== n) : [...p, n]);
-  const toggleV = (n: string) => setSelV(p => p.includes(n) ? p.filter(x => x !== n) : [...p, n]);
+  const tP = (n: string) => setSelP(p => p.includes(n) ? p.filter(x => x !== n) : [...p, n]);
+  const tV = (n: string) => setSelV(p => p.includes(n) ? p.filter(x => x !== n) : [...p, n]);
 
   return (
     <div className="setup-screen">
       <div className="setup-header">
-        <div className="esc-stars-top">★ ★ ★ ★ ★ ★ ★</div>
-        <h1 className="esc-main-title">EUROVISION</h1>
-        <div className="esc-main-year">SONG CONTEST 2005</div>
-        <div className="esc-main-city">КИЕВ • УКРАИНА</div>
+        <div className="setup-stars">★ ★ ★ ★ ★ ★ ★</div>
+        <h1 className="setup-title">EUROVISION</h1>
+        <div className="setup-year">SONG CONTEST 2005</div>
+        <div className="setup-city">КИЕВ • УКРАИНА</div>
       </div>
-      <div className="setup-columns">
+      <div className="setup-cols">
         <div className="setup-col">
-          <div className="setup-col-header">
-            <span>🎤 УЧАСТНИКИ КОНКУРСА</span>
-            <button className="select-all-btn"
-              onClick={() => setSelP(selP.length === ALL_PARTICIPANTS.length ? [] : [...ALL_PARTICIPANTS])}>
+          <div className="setup-col-hdr">
+            <span>🎤 УЧАСТНИКИ</span>
+            <button className="setup-all-btn" onClick={() => setSelP(selP.length === ALL_PARTICIPANTS.length ? [] : [...ALL_PARTICIPANTS])}>
               {selP.length === ALL_PARTICIPANTS.length ? "Снять все" : "Все"}
             </button>
           </div>
-          <div className="names-grid">
-            {ALL_PARTICIPANTS.map(name => (
-              <div key={name} className={`name-chip ${selP.includes(name) ? "chip-active-p" : ""}`} onClick={() => toggleP(name)}>
-                <span className="chip-check">{selP.includes(name) ? "✓" : ""}</span>{name}
+          <div className="setup-chips">
+            {ALL_PARTICIPANTS.map(n => (
+              <div key={n} className={`setup-chip ${selP.includes(n) ? "chip-p" : ""}`} onClick={() => tP(n)}>
+                {selP.includes(n) ? "✓ " : ""}{n}
               </div>
             ))}
           </div>
         </div>
         <div className="setup-col">
-          <div className="setup-col-header">
-            <span>🗳️ ГОЛОСУЮЩИЕ ЖЮРИ</span>
-            <button className="select-all-btn"
-              onClick={() => setSelV(selV.length === ALL_PARTICIPANTS.length ? [] : [...ALL_PARTICIPANTS])}>
+          <div className="setup-col-hdr">
+            <span>🗳️ ГОЛОСУЮЩИЕ</span>
+            <button className="setup-all-btn" onClick={() => setSelV(selV.length === ALL_PARTICIPANTS.length ? [] : [...ALL_PARTICIPANTS])}>
               {selV.length === ALL_PARTICIPANTS.length ? "Снять все" : "Все"}
             </button>
           </div>
-          <p className="setup-hint">Голосующие могут не входить в список участников</p>
-          <div className="names-grid">
-            {ALL_PARTICIPANTS.map(name => (
-              <div key={name} className={`name-chip ${selV.includes(name) ? "chip-active-v" : ""}`} onClick={() => toggleV(name)}>
-                <span className="chip-check">{selV.includes(name) ? "✓" : ""}</span>{name}
+          <p className="setup-hint">Могут голосовать и те, кто не участвует</p>
+          <div className="setup-chips">
+            {ALL_PARTICIPANTS.map(n => (
+              <div key={n} className={`setup-chip ${selV.includes(n) ? "chip-v" : ""}`} onClick={() => tV(n)}>
+                {selV.includes(n) ? "✓ " : ""}{n}
               </div>
             ))}
           </div>
@@ -123,11 +112,10 @@ function SetupScreen({ onStart }: { onStart: (p: string[], v: string[]) => void 
       </div>
       <div className="setup-footer">
         <div className="setup-counts">
-          <div className="count-badge"><span className="count-num">{selP.length}</span><span className="count-label">участников</span></div>
-          <div className="count-sep">×</div>
-          <div className="count-badge"><span className="count-num">{selV.length}</span><span className="count-label">голосующих</span></div>
+          <div className="setup-count"><b>{selP.length}</b><span>участников</span></div>
+          <div className="setup-count"><b>{selV.length}</b><span>голосующих</span></div>
         </div>
-        <button className="start-btn" disabled={selP.length < 2 || selV.length < 1} onClick={() => onStart(selP, selV)}>
+        <button className="setup-start" disabled={selP.length < 2 || selV.length < 1} onClick={() => onStart(selP, selV)}>
           ★ НАЧАТЬ ГОЛОСОВАНИЕ ★
         </button>
       </div>
@@ -135,194 +123,182 @@ function SetupScreen({ onStart }: { onStart: (p: string[], v: string[]) => void 
   );
 }
 
-// ─────────────────────────────────────────────
-// 12 POINTS SCREEN
-// ─────────────────────────────────────────────
+// ── 12 POINTS ──────────────────────────────────────────────────────────
 function TwelveScreen({ from, to, onContinue }: { from: string; to: string; onContinue: () => void }) {
   const [vis, setVis] = useState(false);
   useEffect(() => { const t = setTimeout(() => setVis(true), 80); return () => clearTimeout(t); }, []);
   return (
-    <div className={`twelve-screen ${vis ? "twelve-visible" : ""}`}>
-      <div className="twelve-stars-bg">
+    <div className={`twelve-wrap ${vis ? "twelve-in" : ""}`}>
+      <div className="twelve-bg">
         {[...Array(24)].map((_, i) => (
-          <div key={i} className="falling-star" style={{
+          <div key={i} className="twelve-star" style={{
             left: `${(i * 17 + 5) % 100}%`,
             animationDelay: `${(i * 0.18) % 2.5}s`,
             animationDuration: `${1.8 + (i % 5) * 0.4}s`,
-            fontSize: `${12 + (i % 4) * 8}px`,
+            fontSize: `${14 + (i % 4) * 9}px`,
           }}>★</div>
         ))}
       </div>
-      <div className="twelve-content">
-        <div className="twelve-jury-label">ЖЮРИ</div>
-        <div className="twelve-from-name">{from}</div>
-        <div className="twelve-gives-text">ПРИСУЖДАЕТ</div>
+      <div className="twelve-body">
+        <div className="twelve-jury">ЖЮРИ</div>
+        <div className="twelve-from">{from}</div>
+        <div className="twelve-gives">ПРИСУЖДАЕТ</div>
         <div className="twelve-badge">
-          <div className="twelve-big-num">12</div>
-          <div className="twelve-pts-label">БАЛЛОВ</div>
+          <span className="twelve-num">12</span>
+          <span className="twelve-pts">БАЛЛОВ</span>
         </div>
-        <div className="twelve-arrow-down">▼</div>
-        <div className="twelve-to-name">{to}</div>
+        <div className="twelve-arrow">▼</div>
+        <div className="twelve-to">{to}</div>
       </div>
-      <button className="twelve-btn" onClick={onContinue}>ПРОДОЛЖИТЬ →</button>
+      <button className="twelve-continue" onClick={onContinue}>ПРОДОЛЖИТЬ →</button>
     </div>
   );
 }
 
-// ─────────────────────────────────────────────
-// ANIMATED SCOREBOARD — точная копия дизайна Евровидения 2005
-// Строки абсолютно позиционированы, transition:top двигает их плавно
-// В строке: ИМЯ ... [балл от голосующего] [общий счёт]
-// ─────────────────────────────────────────────
-interface RowState {
-  name: string;
-  score: number;
-  col: 0 | 1;
-  rowInCol: number;
-  awardedPoints: number; // балл присуждённый текущим голосующим (0 = нет)
-  highlighted: boolean;
-}
-
-function AnimatedScoreboard({ participants, scores, currentVotes, onPick, pickable, flashKey }: {
+// ── SCOREBOARD — точная копия скриншота ────────────────────────────────
+// Строки абсолютно позиционированы, анимируются через transition:top
+function Scoreboard({
+  participants, scores, currentVotes, onPick, canPick, flashKey,
+}: {
   participants: string[];
   scores: Record<string, number>;
   currentVotes: Record<string, number>;
   onPick: (name: string) => void;
-  pickable: (name: string) => boolean;
+  canPick: (name: string) => boolean;
   flashKey: number;
 }) {
-  const sorted = sortParticipants(participants, scores);
-  const half = Math.ceil(sorted.length / 2);
+  const list = sorted(participants, scores);
+  const half = Math.ceil(list.length / 2);
+  const left = list.slice(0, half);
+  const right = list.slice(half);
+  const colH = half * ROW_H;
 
-  const rows: RowState[] = sorted.map((name, globalIdx) => {
-    const col: 0 | 1 = globalIdx < half ? 0 : 1;
-    const rowInCol = globalIdx < half ? globalIdx : globalIdx - half;
-    return {
-      name,
-      score: scores[name] || 0,
-      col,
-      rowInCol,
-      awardedPoints: currentVotes[name] || 0,
-      highlighted: !!currentVotes[name],
-    };
-  });
+  const renderRow = (name: string, idx: number) => {
+    const score = scores[name] || 0;
+    const awarded = currentVotes[name] || 0;
+    const clickable = canPick(name);
+    const isBig = awarded >= 10;
 
-  const colCount = Math.max(half, sorted.length - half);
-
-  const renderRow = (row: RowState) => {
-    const canPick = pickable(row.name);
-    // Зелёный для 1-8, белый/яркий для 10 и 12 (как на скриншоте)
-    const pointClass = row.awardedPoints >= 10 ? "sb-anim-point-big" : "sb-anim-point-small";
     return (
       <div
-        key={row.name}
-        className={[
-          "sb-anim-row",
-          row.highlighted ? "sb-anim-highlighted" : "",
-          canPick ? "sb-anim-clickable" : "sb-anim-disabled",
-        ].join(" ").trim()}
-        style={{ top: row.rowInCol * ROW_H, height: ROW_H }}
-        onClick={() => canPick && onPick(row.name)}
+        key={name}
+        className={`sb-row ${clickable ? "sb-row-pick" : ""} ${awarded ? "sb-row-lit" : ""}`}
+        style={{ top: idx * ROW_H, height: ROW_H }}
+        onClick={() => clickable && onPick(name)}
       >
-        <span className="sb-anim-flag" />
-        <span className="sb-anim-name">{row.name.toUpperCase()}</span>
-        {row.awardedPoints > 0 && (
-          <span key={`pt-${flashKey}-${row.name}`} className={`sb-anim-point ${pointClass}`}>
-            {row.awardedPoints}
+        {/* Флаг-кружок */}
+        <div className="sb-flag" />
+        {/* Имя */}
+        <span className="sb-name">{name.toUpperCase()}</span>
+        {/* Балл текущего голосующего */}
+        {awarded > 0 && (
+          <span
+            key={`aw-${flashKey}-${name}`}
+            className={`sb-awarded ${isBig ? "sb-awarded-big" : "sb-awarded-small"}`}
+          >
+            {awarded}
           </span>
         )}
+        {/* Общий счёт */}
         <span
-          key={row.highlighted ? `flash-${flashKey}` : row.name}
-          className={`sb-anim-score ${row.highlighted ? "sb-anim-score-flash" : ""}`}
+          key={awarded ? `sc-${flashKey}-${name}` : `sc-${name}`}
+          className={`sb-score ${awarded ? "sb-score-flash" : ""}`}
         >
-          {row.score > 0 ? row.score : ""}
+          {score > 0 ? score : ""}
         </span>
       </div>
     );
   };
 
   return (
-    <div className="sb-animated-wrap">
-      <div className="sb-animated-col" style={{ height: colCount * ROW_H }}>
-        {rows.filter(r => r.col === 0).map(renderRow)}
+    <div className="sb-table">
+      {/* Левая колонка */}
+      <div className="sb-col" style={{ height: colH }}>
+        {left.map((name, i) => renderRow(name, i))}
       </div>
-      <div className="sb-animated-divider" />
-      <div className="sb-animated-col" style={{ height: colCount * ROW_H }}>
-        {rows.filter(r => r.col === 1).map(renderRow)}
+      {/* Правая колонка */}
+      <div className="sb-col" style={{ height: colH }}>
+        {right.map((name, i) => renderRow(name, i))}
       </div>
     </div>
   );
 }
 
-// ─────────────────────────────────────────────
-// VOTING SCREEN
-// ─────────────────────────────────────────────
-function VotingScreen({ state, onAwardPoint, onFinishVoter }: {
+// ── VOTING SCREEN ───────────────────────────────────────────────────────
+function VotingScreen({ state, onAward, onFinish }: {
   state: GameState;
-  onAwardPoint: (recipient: string) => void;
-  onFinishVoter: () => void;
+  onAward: (name: string) => void;
+  onFinish: () => void;
 }) {
-  const currentVoter = state.voters[state.currentVoterIndex];
-  const currentPointValue = VOTE_ORDER[state.pointStep];
-  const allPointsGiven = state.pointStep >= VOTE_ORDER.length;
+  const voter = state.voters[state.currentVoterIndex];
+  const curPts = VOTE_ORDER[state.pointStep];
+  const done = state.pointStep >= VOTE_ORDER.length;
   const alreadyVoted = new Set(Object.keys(state.currentVotes));
 
-  const entries = Object.entries(state.currentVotes);
-  const lastRecipient = entries.length > 0 ? entries[entries.length - 1][0] : "";
-
   const [flashKey, setFlashKey] = useState(0);
-
-  const prevRecipient = useRef("");
+  const prevStep = useRef(state.pointStep);
   useEffect(() => {
-    if (lastRecipient && lastRecipient !== prevRecipient.current) {
-      prevRecipient.current = lastRecipient;
+    if (state.pointStep !== prevStep.current) {
+      prevStep.current = state.pointStep;
       setFlashKey(k => k + 1);
     }
-  }, [lastRecipient]);
+  }, [state.pointStep]);
 
-  // Можно ли выбрать участника: не сам голосующий, ещё не голосовали, баллы ещё остались
-  const pickable = (name: string) =>
-    !allPointsGiven && name !== currentVoter && !alreadyVoted.has(name);
+  const canPick = (name: string) =>
+    !done && name !== voter && !alreadyVoted.has(name);
 
   return (
-    <div className="esc-voting-wrap">
-      <div className="esc-bg-gradient" />
+    <div className="esc-screen">
+      {/* ФОН — зелёно-синие волны */}
+      <div className="esc-bg" />
 
-      {/* Подсказка вверху какой балл присуждаем */}
-      {!allPointsGiven && (
-        <div className="esc-top-hint">
-          Нажмите на участника, чтобы дать{" "}
-          <span className="esc-top-hint-pts">{currentPointValue}</span>{" "}
-          {currentPointValue === 1 ? "балл" : currentPointValue < 5 ? "балла" : "баллов"}
-        </div>
-      )}
-
-      <div className="esc-center">
-        {/* ТАБЛИЦА — клик прямо по строке */}
-        <AnimatedScoreboard
+      {/* ЦЕНТРАЛЬНАЯ ЧАСТЬ */}
+      <div className="esc-main">
+        {/* Таблица */}
+        <Scoreboard
           participants={state.participants}
           scores={state.scores}
           currentVotes={state.currentVotes}
-          onPick={onAwardPoint}
-          pickable={pickable}
+          onPick={onAward}
+          canPick={canPick}
           flashKey={flashKey}
         />
 
-        {/* ШАРИКИ с баллами */}
-        <div className="esc-balls">
-          {VOTE_ORDER.map((pts, idx) => {
+        {/* Фото-кружок голосующего справа */}
+        <div className="esc-photo-wrap">
+          <div className="esc-photo">
+            <span className="esc-photo-letter">{voter.charAt(0)}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* НИЖНЯЯ ПОЛОСА */}
+      <div className="esc-bottom">
+        {/* Флаг + имя голосующего */}
+        <div className="esc-voter-block">
+          <div className="esc-voter-flag">
+            <span className="esc-voter-flag-letter">{voter.charAt(0)}</span>
+          </div>
+          <span className="esc-voter-name">{voter.toUpperCase()}</span>
+        </div>
+
+        {/* Шарики 10 и 12 */}
+        <div className="esc-bubbles">
+          {VOTE_ORDER.slice(-5).map((pts, i) => {
+            const idx = VOTE_ORDER.indexOf(pts);
             const given = state.pointStep > idx;
-            const current = state.pointStep === idx && !allPointsGiven;
-            const isTwelve = pts === 12;
+            const current = state.pointStep === idx && !done;
+            const show = pts >= 8;
+            if (!show) return null;
             return (
               <div
                 key={pts}
                 className={[
-                  "esc-ball",
-                  given ? "ball-given" : "",
-                  current ? "ball-current" : "",
-                  current && isTwelve ? "ball-twelve-current" : "",
-                ].join(" ").trim()}
+                  "esc-bubble",
+                  given ? "bubble-done" : "",
+                  current ? "bubble-now" : "",
+                  pts === 12 ? "bubble-12" : "",
+                ].filter(Boolean).join(" ")}
               >
                 {pts}
               </div>
@@ -331,139 +307,108 @@ function VotingScreen({ state, onAwardPoint, onFinishVoter }: {
         </div>
       </div>
 
-      {/* Имя голосующего — внизу с аватаром как FRANCE */}
-      <div className="esc-voter-bar">
-        <div className="esc-voter-left">
-          <div className="esc-voter-avatar">{currentVoter.charAt(0)}</div>
-          <div className="esc-voter-name">{currentVoter.toUpperCase()}</div>
-        </div>
-        <div className="esc-voter-right">
-          {allPointsGiven ? (
-            <button className="esc-next-btn" onClick={onFinishVoter}>
-              СЛЕДУЮЩИЙ →
-            </button>
-          ) : (
-            <div className="esc-voter-progress">{state.usedVoters.length + 1} / {state.voters.length}</div>
-          )}
-        </div>
+      {/* Подсказка / кнопка */}
+      <div className="esc-hint">
+        {!done ? (
+          <span>Нажмите на участника, чтобы дать <strong style={{ color: "#4cff6e" }}>{curPts}</strong> {curPts === 1 ? "балл" : curPts < 5 ? "балла" : "баллов"}</span>
+        ) : (
+          <button className="esc-next" onClick={onFinish}>СЛЕДУЮЩИЙ ГОЛОСУЮЩИЙ →</button>
+        )}
       </div>
     </div>
   );
 }
 
-// ─────────────────────────────────────────────
-// RESULTS SCREEN
-// ─────────────────────────────────────────────
+// ── RESULTS ─────────────────────────────────────────────────────────────
 function ResultsScreen({ state, onReset }: { state: GameState; onReset: () => void }) {
-  const sorted = sortParticipants(state.participants, state.scores);
+  const list = sorted(state.participants, state.scores);
   const twelves: Record<string, number> = {};
   const tens: Record<string, number> = {};
   state.voteHistory.forEach(h => {
     if (h.points === 12) twelves[h.recipient] = (twelves[h.recipient] || 0) + 1;
     if (h.points === 10) tens[h.recipient] = (tens[h.recipient] || 0) + 1;
   });
-  const podColors = ["#FFD700", "#C0C0C0", "#CD7F32"];
+  const medal = ["🥇", "🥈", "🥉"];
 
   return (
-    <div className="results-screen">
+    <div className="results-wrap">
       <div className="results-header">
-        <div className="res-stars">★ ★ ★ ★ ★ ★ ★</div>
-        <h1 className="res-title">ФИНАЛЬНЫЕ РЕЗУЛЬТАТЫ</h1>
-        <div className="res-subtitle">EUROVISION SONG CONTEST 2005</div>
+        <div className="results-stars">★ ★ ★ ★ ★ ★ ★</div>
+        <h1 className="results-title">ФИНАЛЬНЫЕ РЕЗУЛЬТАТЫ</h1>
+        <div className="results-sub">EUROVISION SONG CONTEST 2005</div>
       </div>
-      <div className="podium-wrap">
-        {[1, 0, 2].map(i => sorted[i] ? (
-          <div key={i} className={`podium-item pod-${i + 1}`}>
-            <div className="pod-name">{sorted[i]}</div>
-            <div className="pod-score" style={{ color: podColors[i] }}>{state.scores[sorted[i]] || 0}</div>
-            <div className="pod-block" style={{
-              height: `${130 - i * 35}px`,
-              background: `linear-gradient(180deg, ${podColors[i]}33, ${podColors[i]}99)`,
-              borderTop: `4px solid ${podColors[i]}`
+      <div className="results-podium">
+        {[1, 0, 2].map(i => list[i] ? (
+          <div key={i} className="podium-item">
+            <div className="podium-name">{list[i]}</div>
+            <div className="podium-score" style={{ color: ["#FFD700","#C0C0C0","#CD7F32"][i] }}>
+              {state.scores[list[i]] || 0}
+            </div>
+            <div className="podium-block" style={{
+              height: `${120 - i * 30}px`,
+              background: `linear-gradient(180deg,${["#FFD700","#C0C0C0","#CD7F32"][i]}33,${["#FFD700","#C0C0C0","#CD7F32"][i]}88)`,
+              borderTop: `3px solid ${["#FFD700","#C0C0C0","#CD7F32"][i]}`
             }}>
-              <span className="pod-place" style={{ color: podColors[i] }}>{i + 1}</span>
+              <span style={{ color: ["#FFD700","#C0C0C0","#CD7F32"][i], fontFamily: "var(--fm)", fontSize: 28, fontWeight: 700 }}>{i + 1}</span>
             </div>
           </div>
         ) : null)}
       </div>
-      <div className="res-table-wrap">
-        <table className="res-table">
+      <div className="results-table-wrap">
+        <table className="results-table">
           <thead>
-            <tr><th>МЕСТО</th><th>УЧАСТНИК</th><th>ОЧКИ</th><th>✦ 12</th><th>✦ 10</th></tr>
+            <tr><th>МЕСТО</th><th>УЧАСТНИК</th><th>ОЧКИ</th><th>✦12</th><th>✦10</th></tr>
           </thead>
           <tbody>
-            {sorted.map((name, i) => (
-              <tr key={name} style={{ backgroundColor: i % 2 === 0 ? "#0d2464" : "#091b4e" }}
-                className={i < 3 ? "res-top-row" : ""}>
-                <td className="res-td-pos">{i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}</td>
-                <td className="res-td-name">{name}</td>
-                <td className="res-td-score"><span className="res-score-pill">{state.scores[name] || 0}</span></td>
-                <td className="res-td-12">{twelves[name] ? <span className="res-12-badge">×{twelves[name]}</span> : "—"}</td>
-                <td className="res-td-10">{tens[name] ? <span className="res-10-badge">×{tens[name]}</span> : "—"}</td>
+            {list.map((name, i) => (
+              <tr key={name} style={{ background: i % 2 === 0 ? "#0d2464" : "#091b4e" }}
+                className={i < 3 ? "rt-top" : ""}>
+                <td className="rt-pos">{i < 3 ? medal[i] : i + 1}</td>
+                <td className="rt-name">{name}</td>
+                <td className="rt-score"><span className="rt-pill">{state.scores[name] || 0}</span></td>
+                <td className="rt-12">{twelves[name] ? <span className="rt-12b">×{twelves[name]}</span> : "—"}</td>
+                <td className="rt-10">{tens[name] ? <span className="rt-10b">×{tens[name]}</span> : "—"}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      <div className="res-footer">
-        <button className="res-reset-btn" onClick={onReset}>★ НОВОЕ ГОЛОСОВАНИЕ ★</button>
-      </div>
+      <button className="results-reset" onClick={onReset}>★ НОВОЕ ГОЛОСОВАНИЕ ★</button>
     </div>
   );
 }
 
-// ─────────────────────────────────────────────
-// ROOT
-// ─────────────────────────────────────────────
+// ── ROOT ────────────────────────────────────────────────────────────────
 export default function Index() {
   const [state, setState] = useState<GameState>(() => loadState());
-  const update = useCallback((s: GameState) => { setState(s); saveState(s); }, []);
+  const upd = useCallback((s: GameState) => { setState(s); saveState(s); }, []);
 
   const handleStart = (participants: string[], voters: string[]) => {
     const scores: Record<string, number> = {};
     participants.forEach(p => { scores[p] = 0; });
-    update({
-      phase: "voting", participants, voters, scores,
-      currentVoterIndex: 0, currentVotes: {}, pointStep: 0,
-      usedVoters: [], twelveFrom: "", twelveTo: "", voteHistory: []
-    });
+    upd({ phase: "voting", participants, voters, scores, currentVoterIndex: 0, currentVotes: {}, pointStep: 0, usedVoters: [], twelveFrom: "", twelveTo: "", voteHistory: [] });
   };
 
-  const handleAwardPoint = (recipient: string) => {
+  const handleAward = (name: string) => {
     setState(prev => {
       const pts = VOTE_ORDER[prev.pointStep];
-      const newVotes = { ...prev.currentVotes, [recipient]: pts };
-      const newStep = prev.pointStep + 1;
-      // Обновляем очки немедленно для анимации таблицы
-      const newScores = { ...prev.scores, [recipient]: (prev.scores[recipient] || 0) + pts };
-      const s: GameState = { ...prev, currentVotes: newVotes, pointStep: newStep, scores: newScores };
-      saveState(s);
-      return s;
+      const newVotes = { ...prev.currentVotes, [name]: pts };
+      const newScores = { ...prev.scores, [name]: (prev.scores[name] || 0) + pts };
+      const s = { ...prev, currentVotes: newVotes, scores: newScores, pointStep: prev.pointStep + 1 };
+      saveState(s); return s;
     });
   };
 
-  const handleFinishVoter = () => {
+  const handleFinish = () => {
     setState(prev => {
       const voter = prev.voters[prev.currentVoterIndex];
       const newHist = [...prev.voteHistory];
-      // Баллы уже добавлены в scores при handleAwardPoint
-      Object.entries(prev.currentVotes).forEach(([r, p]) => {
-        newHist.push({ voter, recipient: r, points: p });
-      });
+      Object.entries(prev.currentVotes).forEach(([r, p]) => newHist.push({ voter, recipient: r, points: p }));
       const twelveR = Object.entries(prev.currentVotes).find(([, p]) => p === 12)?.[0] || "";
       const nextIdx = prev.currentVoterIndex + 1;
       const isLast = nextIdx >= prev.voters.length;
-      const phase: Phase = twelveR
-        ? (isLast ? "twelve_then_results" : "twelve")
-        : (isLast ? "results" : "voting");
-      const s: GameState = {
-        ...prev,
-        voteHistory: newHist,
-        usedVoters: [...prev.usedVoters, voter],
-        currentVotes: {}, pointStep: 0,
-        currentVoterIndex: nextIdx,
-        twelveFrom: voter, twelveTo: twelveR, phase
-      };
+      const phase: Phase = twelveR ? (isLast ? "twelve_then_results" : "twelve") : (isLast ? "results" : "voting");
+      const s: GameState = { ...prev, voteHistory: newHist, usedVoters: [...prev.usedVoters, voter], currentVotes: {}, pointStep: 0, currentVoterIndex: nextIdx, twelveFrom: voter, twelveTo: twelveR, phase };
       saveState(s); return s;
     });
   };
@@ -471,28 +416,16 @@ export default function Index() {
   const handleTwelveCont = () => {
     setState(prev => {
       const phase: Phase = prev.phase === "twelve_then_results" ? "results" : "voting";
-      const s = { ...prev, phase };
-      saveState(s); return s;
+      const s = { ...prev, phase }; saveState(s); return s;
     });
   };
 
-  const handleReset = () => { localStorage.removeItem(STORAGE_KEY); update(getInitialState()); };
+  const handleReset = () => { localStorage.removeItem(STORAGE_KEY); upd(getInitial()); };
 
   return (
-    <div className="esc-app">
-      <div className="esc-starfield">
-        {[...Array(60)].map((_, i) => (
-          <div key={i} className="sf-star" style={{
-            left: `${(i * 31 + 11) % 100}%`, top: `${(i * 47 + 17) % 100}%`,
-            animationDelay: `${(i * 0.25) % 5}s`, fontSize: `${6 + (i % 5) * 3}px`,
-            opacity: 0.05 + (i % 6) * 0.06
-          }}>★</div>
-        ))}
-      </div>
+    <div className="app-root">
       {state.phase === "setup" && <SetupScreen onStart={handleStart} />}
-      {state.phase === "voting" && (
-        <VotingScreen state={state} onAwardPoint={handleAwardPoint} onFinishVoter={handleFinishVoter} />
-      )}
+      {state.phase === "voting" && <VotingScreen state={state} onAward={handleAward} onFinish={handleFinish} />}
       {(state.phase === "twelve" || state.phase === "twelve_then_results") && (
         <TwelveScreen from={state.twelveFrom} to={state.twelveTo} onContinue={handleTwelveCont} />
       )}

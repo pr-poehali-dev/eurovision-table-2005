@@ -1,19 +1,16 @@
-/* ===== EUROVISION 2005 ===== */
+/* ══════════════════════════════════════════════
+   EUROVISION 2005 — точная копия скриншота
+   ══════════════════════════════════════════════ */
+
+:root {
+  --fm: "Oswald", "Arial Black", Arial, sans-serif;
+  --fb: "Montserrat", Arial, sans-serif;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-}
-
-:root {
-  --esc-dark: #020b2e;
-  --esc-gold: #f5c800;
-  --esc-silver: #c8d8ff;
-  --esc-cyan: #00d4ff;
-  --esc-white: #ffffff;
-  --esc-red: #ff3b3b;
-  --font-main: "Oswald", sans-serif;
-  --font-body: "Montserrat", sans-serif;
 }
 
 html,
@@ -22,286 +19,219 @@ body,
   width: 100%;
   height: 100%;
   min-height: 100vh;
-  background: var(--esc-dark);
-  color: var(--esc-white);
-  font-family: var(--font-body);
+  font-family: var(--fb);
+  background: #041a60;
+  color: #fff;
   overflow-x: hidden;
 }
 
-.esc-app {
+.app-root {
   min-height: 100vh;
-  position: relative;
-  background: #020b2e;
-}
-.esc-starfield {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-}
-.sf-star {
-  position: absolute;
-  color: var(--esc-gold);
-  animation: twinkle 4s infinite ease-in-out;
-}
-@keyframes twinkle {
-  0%,
-  100% {
-    opacity: 0.05;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.4;
-    transform: scale(1.3);
-  }
 }
 
-/* ===== SETUP ===== */
+/* ══ SETUP ══════════════════════════════════════ */
 .setup-screen {
-  position: relative;
-  z-index: 1;
   min-height: 100vh;
+  background: radial-gradient(ellipse at 50% 0%, #0a2080 0%, #020b2e 70%);
   display: flex;
   flex-direction: column;
   padding-bottom: 40px;
 }
 .setup-header {
   text-align: center;
-  padding: 40px 20px 28px;
+  padding: 36px 20px 24px;
+  border-bottom: 1px solid rgba(245, 200, 0, 0.25);
   background: linear-gradient(180deg, #0a1f70 0%, transparent 100%);
-  border-bottom: 2px solid rgba(245, 200, 0, 0.3);
 }
-.esc-stars-top {
+.setup-stars {
+  color: #f5c800;
+  letter-spacing: 10px;
   font-size: 18px;
-  color: var(--esc-gold);
-  letter-spacing: 12px;
-  margin-bottom: 10px;
-  animation: pulse-gold 2s infinite;
+  margin-bottom: 8px;
 }
-@keyframes pulse-gold {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-.esc-main-title {
-  font-family: var(--font-main);
-  font-size: clamp(40px, 8vw, 80px);
+.setup-title {
+  font-family: var(--fm);
+  font-size: clamp(38px, 8vw, 76px);
   font-weight: 700;
-  letter-spacing: 12px;
-  color: var(--esc-white);
-  text-shadow:
-    0 0 40px rgba(0, 212, 255, 0.6),
-    0 0 80px rgba(0, 100, 255, 0.4);
-  line-height: 1;
+  letter-spacing: 10px;
+  text-shadow: 0 0 40px rgba(0, 180, 255, 0.5);
 }
-.esc-main-year {
-  font-family: var(--font-main);
-  font-size: clamp(14px, 3vw, 24px);
-  letter-spacing: 8px;
-  color: var(--esc-gold);
-  margin-top: 6px;
-}
-.esc-main-city {
-  font-size: 12px;
+.setup-year {
+  font-family: var(--fm);
+  font-size: clamp(14px, 3vw, 22px);
   letter-spacing: 6px;
-  color: var(--esc-silver);
-  margin-top: 6px;
-  opacity: 0.7;
+  color: #f5c800;
+  margin-top: 4px;
+}
+.setup-city {
+  font-size: 12px;
+  letter-spacing: 5px;
+  color: rgba(200, 220, 255, 0.6);
+  margin-top: 5px;
 }
 
-.setup-columns {
+.setup-cols {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
-  padding: 24px 28px;
+  padding: 22px 28px;
   flex: 1;
 }
-@media (max-width: 768px) {
-  .setup-columns {
+@media (max-width: 700px) {
+  .setup-cols {
     grid-template-columns: 1fr;
   }
 }
+
 .setup-col {
-  background: rgba(13, 36, 100, 0.6);
+  background: rgba(13, 36, 100, 0.55);
   border: 1px solid rgba(245, 200, 0, 0.2);
-  border-radius: 12px;
-  padding: 18px;
-  backdrop-filter: blur(8px);
+  border-radius: 10px;
+  padding: 16px;
 }
-.setup-col-header {
+.setup-col-hdr {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
-  font-family: var(--font-main);
-  font-size: 14px;
+  align-items: center;
+  font-family: var(--fm);
+  font-size: 13px;
   letter-spacing: 2px;
-  color: var(--esc-gold);
+  color: #f5c800;
+  margin-bottom: 10px;
 }
-.select-all-btn {
-  background: rgba(245, 200, 0, 0.15);
-  border: 1px solid var(--esc-gold);
-  color: var(--esc-gold);
-  padding: 3px 10px;
-  border-radius: 4px;
+.setup-all-btn {
   font-size: 11px;
+  padding: 3px 10px;
+  border: 1px solid #f5c800;
+  background: rgba(245, 200, 0, 0.12);
+  color: #f5c800;
+  border-radius: 4px;
   cursor: pointer;
-  transition: all 0.2s;
 }
-.select-all-btn:hover {
-  background: var(--esc-gold);
+.setup-all-btn:hover {
+  background: #f5c800;
   color: #000;
 }
 .setup-hint {
   font-size: 11px;
-  color: var(--esc-silver);
-  opacity: 0.6;
-  margin-bottom: 10px;
-  line-height: 1.4;
+  color: rgba(200, 220, 255, 0.55);
+  margin-bottom: 8px;
 }
-.names-grid {
+.setup-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
-  max-height: 320px;
+  max-height: 300px;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: var(--esc-gold) transparent;
 }
-.name-chip {
-  display: flex;
-  align-items: center;
-  gap: 4px;
+.setup-chip {
   padding: 4px 9px;
-  border-radius: 20px;
+  border-radius: 16px;
   border: 1px solid rgba(200, 216, 255, 0.2);
   background: rgba(255, 255, 255, 0.04);
   font-size: 12px;
-  color: rgba(200, 216, 255, 0.65);
+  color: rgba(200, 216, 255, 0.6);
   cursor: pointer;
-  transition: all 0.15s;
   user-select: none;
+  transition: all 0.15s;
 }
-.name-chip:hover {
+.setup-chip:hover {
+  color: #fff;
   border-color: rgba(200, 216, 255, 0.5);
+}
+.chip-p {
+  background: rgba(0, 180, 255, 0.15);
+  border-color: #00d4ff;
   color: #fff;
 }
-.chip-active-p {
-  background: rgba(0, 212, 255, 0.15);
-  border-color: var(--esc-cyan);
-  color: #fff;
-}
-.chip-active-v {
+.chip-v {
   background: rgba(245, 200, 0, 0.15);
-  border-color: var(--esc-gold);
+  border-color: #f5c800;
   color: #fff;
-}
-.chip-check {
-  font-size: 10px;
-  color: var(--esc-cyan);
-  min-width: 10px;
-  font-weight: 700;
-}
-.chip-active-v .chip-check {
-  color: var(--esc-gold);
 }
 
 .setup-footer {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 28px;
+  gap: 24px;
   padding: 16px 28px 0;
   flex-wrap: wrap;
 }
 .setup-counts {
   display: flex;
-  align-items: center;
-  gap: 14px;
+  gap: 16px;
 }
-.count-badge {
+.setup-count {
   display: flex;
   flex-direction: column;
   align-items: center;
   background: rgba(13, 36, 100, 0.6);
   border: 1px solid rgba(245, 200, 0, 0.3);
   border-radius: 8px;
-  padding: 10px 18px;
+  padding: 8px 18px;
 }
-.count-num {
-  font-family: var(--font-main);
-  font-size: 30px;
-  color: var(--esc-gold);
-  line-height: 1;
+.setup-count b {
+  font-family: var(--fm);
+  font-size: 28px;
+  color: #f5c800;
 }
-.count-label {
+.setup-count span {
   font-size: 10px;
   letter-spacing: 2px;
-  color: var(--esc-silver);
-  opacity: 0.7;
-  margin-top: 2px;
+  color: rgba(200, 216, 255, 0.6);
 }
-.count-sep {
-  font-family: var(--font-main);
-  font-size: 22px;
-  color: rgba(245, 200, 0, 0.4);
-}
-.start-btn {
-  font-family: var(--font-main);
-  font-size: 17px;
+.setup-start {
+  font-family: var(--fm);
+  font-size: 16px;
   font-weight: 700;
   letter-spacing: 3px;
-  padding: 15px 44px;
+  padding: 14px 40px;
   background: linear-gradient(135deg, #f5c800, #ff8800);
   color: #000;
   border: none;
   border-radius: 6px;
   cursor: pointer;
+  box-shadow: 0 0 26px rgba(245, 200, 0, 0.4);
   transition: all 0.2s;
-  box-shadow:
-    0 0 28px rgba(245, 200, 0, 0.4),
-    0 4px 14px rgba(0, 0, 0, 0.4);
 }
-.start-btn:hover:not(:disabled) {
+.setup-start:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 0 48px rgba(245, 200, 0, 0.7);
+  box-shadow: 0 0 44px rgba(245, 200, 0, 0.7);
 }
-.start-btn:disabled {
+.setup-start:disabled {
   opacity: 0.35;
   cursor: not-allowed;
 }
 
-/* ===== 12 POINTS SCREEN ===== */
-.twelve-screen {
+/* ══ 12 POINTS ══════════════════════════════════ */
+.twelve-wrap {
   position: fixed;
   inset: 0;
-  z-index: 100;
+  z-index: 200;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   background: #000;
   opacity: 0;
-  transition: opacity 0.5s ease;
+  transition: opacity 0.5s;
 }
-.twelve-visible {
+.twelve-in {
   opacity: 1;
 }
-.twelve-stars-bg {
+.twelve-bg {
   position: absolute;
   inset: 0;
-  pointer-events: none;
   overflow: hidden;
-  background: radial-gradient(ellipse at 50% 50%, #1a0060 0%, #000 70%);
+  background: radial-gradient(ellipse at 50% 50%, #18006a 0%, #000 70%);
+  pointer-events: none;
 }
-.falling-star {
+.twelve-star {
   position: absolute;
   top: -40px;
-  color: var(--esc-gold);
+  color: #f5c800;
   animation: fall-star linear infinite;
 }
 @keyframes fall-star {
@@ -314,16 +244,16 @@ body,
     opacity: 0;
   }
 }
-.twelve-content {
+.twelve-body {
   position: relative;
   z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  animation: twelve-appear 0.6s ease 0.3s both;
+  animation: pop-in 0.6s ease 0.3s both;
 }
-@keyframes twelve-appear {
+@keyframes pop-in {
   from {
     transform: scale(0.6);
     opacity: 0;
@@ -333,28 +263,26 @@ body,
     opacity: 1;
   }
 }
-.twelve-jury-label {
-  font-family: var(--font-main);
-  font-size: 13px;
-  letter-spacing: 6px;
-  color: var(--esc-silver);
-  opacity: 0.6;
-}
-.twelve-from-name {
-  font-family: var(--font-main);
-  font-size: clamp(20px, 5vw, 42px);
-  font-weight: 700;
-  color: var(--esc-cyan);
-  letter-spacing: 3px;
-  text-align: center;
-  text-shadow: 0 0 20px var(--esc-cyan);
-}
-.twelve-gives-text {
-  font-family: var(--font-main);
+.twelve-jury {
+  font-family: var(--fm);
   font-size: 13px;
   letter-spacing: 5px;
-  color: var(--esc-silver);
-  opacity: 0.7;
+  color: rgba(200, 220, 255, 0.6);
+}
+.twelve-from {
+  font-family: var(--fm);
+  font-size: clamp(20px, 5vw, 42px);
+  font-weight: 700;
+  color: #00d4ff;
+  letter-spacing: 2px;
+  text-shadow: 0 0 20px #00d4ff;
+  text-align: center;
+}
+.twelve-gives {
+  font-family: var(--fm);
+  font-size: 13px;
+  letter-spacing: 5px;
+  color: rgba(200, 220, 255, 0.7);
 }
 .twelve-badge {
   display: flex;
@@ -362,41 +290,39 @@ body,
   align-items: center;
   background: linear-gradient(135deg, #ffd700, #ff8800);
   border-radius: 14px;
-  padding: 14px 36px;
-  box-shadow:
-    0 0 60px rgba(255, 200, 0, 0.8),
-    0 0 120px rgba(255, 150, 0, 0.4);
-  animation: badge-pulse 1s ease-in-out 0.8s infinite alternate;
+  padding: 14px 40px;
+  box-shadow: 0 0 60px rgba(255, 200, 0, 0.9);
+  animation: glow-pulse 1s ease-in-out 0.8s infinite alternate;
 }
-@keyframes badge-pulse {
+@keyframes glow-pulse {
   from {
-    transform: scale(1);
+    box-shadow: 0 0 60px rgba(255, 200, 0, 0.9);
   }
   to {
-    transform: scale(1.06);
-    box-shadow: 0 0 100px rgba(255, 200, 0, 1);
+    box-shadow: 0 0 110px rgba(255, 200, 0, 1);
+    transform: scale(1.05);
   }
 }
-.twelve-big-num {
-  font-family: var(--font-main);
+.twelve-num {
+  font-family: var(--fm);
   font-size: clamp(70px, 14vw, 120px);
   font-weight: 700;
   color: #000;
   line-height: 1;
 }
-.twelve-pts-label {
-  font-family: var(--font-main);
-  font-size: 17px;
+.twelve-pts {
+  font-family: var(--fm);
+  font-size: 18px;
   letter-spacing: 7px;
   color: #000;
   font-weight: 600;
 }
-.twelve-arrow-down {
+.twelve-arrow {
   font-size: 26px;
-  color: var(--esc-gold);
-  animation: bounce-arrow 0.6s ease infinite alternate;
+  color: #f5c800;
+  animation: bounce 0.6s ease infinite alternate;
 }
-@keyframes bounce-arrow {
+@keyframes bounce {
   from {
     transform: translateY(0);
   }
@@ -404,443 +330,492 @@ body,
     transform: translateY(8px);
   }
 }
-.twelve-to-name {
-  font-family: var(--font-main);
+.twelve-to {
+  font-family: var(--fm);
   font-size: clamp(26px, 6vw, 54px);
   font-weight: 700;
-  color: var(--esc-gold);
+  color: #f5c800;
   letter-spacing: 3px;
-  text-align: center;
   text-shadow: 0 0 28px rgba(255, 200, 0, 0.8);
+  text-align: center;
 }
-.twelve-btn {
+.twelve-continue {
   position: relative;
   z-index: 2;
   margin-top: 36px;
-  font-family: var(--font-main);
+  font-family: var(--fm);
   font-size: 15px;
   letter-spacing: 4px;
   padding: 13px 36px;
   background: transparent;
-  border: 2px solid var(--esc-gold);
-  color: var(--esc-gold);
+  border: 2px solid #f5c800;
+  color: #f5c800;
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
 }
-.twelve-btn:hover {
-  background: var(--esc-gold);
+.twelve-continue:hover {
+  background: #f5c800;
   color: #000;
 }
 
-/* ===== VOTING SCREEN ===== */
-.esc-voting-wrap {
+/* ══ ГЛАВНЫЙ ЭКРАН ГОЛОСОВАНИЯ ══════════════════
+
+   LAYOUT точно как на скриншоте:
+   - Весь экран занят фоном (зелено-синие волны)
+   - По центру — таблица (не на весь экран, с отступами)
+   - Справа от таблицы — фото-кружок
+   - Снизу: имя голосующего слева, шарики справа
+   ═══════════════════════════════════════════════ */
+
+.esc-screen {
   position: relative;
-  z-index: 1;
+  width: 100vw;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px 16px 160px;
+  overflow: hidden;
+  padding-bottom: 120px;
 }
 
-/* Зелёно-синий волнистый фон как на скриншоте Евровидения */
-.esc-bg-gradient {
+/* ─── ФОН — зелёно-синие волны как на скриншоте ─── */
+.esc-bg {
   position: fixed;
   inset: 0;
   z-index: 0;
-  pointer-events: none;
   background:
+    /* правый зелёный всплеск */
     radial-gradient(
-      ellipse at 85% 18%,
-      rgba(60, 200, 110, 0.55) 0%,
-      transparent 42%
-    ),
-    radial-gradient(
-      ellipse at 90% 55%,
-      rgba(40, 160, 90, 0.4) 0%,
+      ellipse at 88% 20%,
+      rgba(50, 210, 80, 0.9) 0%,
+      rgba(30, 160, 60, 0.6) 18%,
       transparent 45%
     ),
     radial-gradient(
-      ellipse at 12% 75%,
-      rgba(30, 90, 220, 0.5) 0%,
-      transparent 50%
+      ellipse at 95% 60%,
+      rgba(30, 180, 70, 0.7) 0%,
+      transparent 38%
     ),
+    /* левый синий */
+      radial-gradient(
+        ellipse at 5% 70%,
+        rgba(20, 80, 220, 0.7) 0%,
+        transparent 45%
+      ),
     radial-gradient(
-      ellipse at 50% 110%,
-      rgba(20, 60, 190, 0.65) 0%,
-      transparent 60%
+      ellipse at 15% 30%,
+      rgba(10, 60, 200, 0.5) 0%,
+      transparent 40%
     ),
-    linear-gradient(150deg, #062a8f 0%, #0a1f6e 45%, #051850 100%);
+    /* центр низ */
+      radial-gradient(
+        ellipse at 50% 100%,
+        rgba(10, 50, 180, 0.8) 0%,
+        transparent 55%
+      ),
+    /* основа */ linear-gradient(160deg, #0a1f6e 0%, #061450 40%, #041035 100%);
 }
 
-/* Подсказка вверху */
-.esc-top-hint {
-  position: relative;
-  z-index: 2;
-  font-family: var(--font-main);
-  font-size: clamp(13px, 2vw, 18px);
-  letter-spacing: 1px;
-  color: var(--esc-silver);
-  margin-bottom: 18px;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-}
-.esc-top-hint-pts {
-  color: var(--esc-gold);
-  font-size: 1.4em;
-  font-weight: 700;
-  text-shadow: 0 0 12px rgba(245, 200, 0, 0.7);
-}
-
-.esc-center {
+/* ─── ЦЕНТРАЛЬНАЯ ЧАСТЬ: таблица + фото ─── */
+.esc-main {
   position: relative;
   z-index: 1;
   display: flex;
   align-items: flex-start;
-  gap: 22px;
-  width: 100%;
-  max-width: 1080px;
+  gap: 18px;
+  width: 90%;
+  max-width: 980px;
 }
 
-/* ===== ГЛЯНЦЕВАЯ ТАБЛИЦА (как на скриншоте Евровидения) ===== */
-.sb-animated-wrap {
+/* ─── ТАБЛИЦА — точная копия скриншота ─── */
+/* Тёмно-синяя, слегка прозрачная, без явных бордеров колонок */
+.sb-table {
   flex: 1;
   display: flex;
   gap: 0;
-  padding: 14px 10px;
-  background: linear-gradient(
-    180deg,
-    rgba(40, 90, 200, 0.55) 0%,
-    rgba(10, 35, 110, 0.85) 100%
-  );
-  border: 1px solid rgba(140, 180, 255, 0.4);
-  border-radius: 14px;
-  box-shadow:
-    0 12px 50px rgba(0, 0, 0, 0.6),
-    inset 0 1px 2px rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(4px);
+  background: rgba(8, 28, 100, 0.78);
+  border-radius: 4px;
+  overflow: hidden;
+  /* Тонкая рамка как на скриншоте */
+  outline: 1px solid rgba(100, 140, 220, 0.35);
+  padding: 10px 6px;
+  gap: 2px;
 }
 
-.sb-animated-col {
+.sb-col {
   flex: 1;
-  position: relative;
-  min-height: 100px;
+  position: relative; /* для абсолютных строк */
 }
 
-.sb-animated-divider {
-  width: 1px;
-  background: linear-gradient(
-    180deg,
-    transparent,
-    rgba(255, 255, 255, 0.25),
-    transparent
-  );
-  flex-shrink: 0;
-  margin: 0 6px;
-}
-
-/* Строка — абсолютная позиция, transition:top для плавного перемещения */
-.sb-anim-row {
+/* ─── СТРОКА ТАБЛИЦЫ ─── */
+.sb-row {
   position: absolute;
   left: 0;
   right: 0;
   display: flex;
   align-items: center;
-  padding: 0 12px;
-  gap: 8px;
-  border-radius: 6px;
-  transition:
-    top 0.6s cubic-bezier(0.34, 1.2, 0.45, 1),
-    background 0.4s ease;
+  gap: 7px;
+  padding: 0 10px 0 6px;
+  /* КЛЮЧЕВАЯ АНИМАЦИЯ: строки едут вверх/вниз */
+  transition: top 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: default;
 }
 
-.sb-anim-clickable {
+/* Строка которую можно выбрать — подсветка при наведении */
+.sb-row-pick {
   cursor: pointer;
 }
-.sb-anim-clickable:hover {
-  background: rgba(120, 170, 255, 0.28);
-  box-shadow: inset 0 0 0 1px rgba(160, 200, 255, 0.5);
-}
-.sb-anim-disabled {
-  cursor: default;
-  opacity: 0.92;
+.sb-row-pick:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
-/* Подсветка строки получившей баллы */
-.sb-anim-highlighted {
-  background: rgba(120, 175, 255, 0.32) !important;
-  box-shadow: inset 0 0 0 1px rgba(180, 215, 255, 0.6);
-  animation: row-hl-burst 1.2s ease forwards;
-}
-@keyframes row-hl-burst {
-  0% {
-    background: rgba(160, 200, 255, 0.55);
-  }
-  100% {
-    background: rgba(120, 175, 255, 0.22);
-  }
+/* Строка получившая балл — лёгкая подсветка */
+.sb-row-lit {
+  background: rgba(80, 130, 255, 0.12);
 }
 
-/* Кружок-флаг слева как на скриншоте */
-.sb-anim-flag {
-  width: 18px;
-  height: 18px;
+/* ─── КРУЖОК-ФЛАГ ─── */
+/* На скриншоте: маленький цветной кружок слева от имени */
+.sb-flag {
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   flex-shrink: 0;
+  /* Имитация флага — синий кружок с белым бликом, как на оригинале */
   background:
     radial-gradient(
-      circle at 35% 30%,
-      #fff 0%,
-      rgba(255, 255, 255, 0.4) 30%,
+      circle at 38% 32%,
+      rgba(255, 255, 255, 0.65) 0%,
+      rgba(255, 255, 255, 0.1) 40%,
       transparent 55%
     ),
-    linear-gradient(135deg, #5588dd, #2255aa);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    conic-gradient(from 0deg, #cc0000 0% 33%, #ffffff 33% 66%, #0055a4 66% 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
-.sb-anim-name {
-  font-family: var(--font-main);
-  font-size: clamp(12px, 1.35vw, 18px);
+/* ─── ИМЯ В СТРОКЕ ─── */
+/* На скриншоте: CAPS, белый, жирный, без засечек, размер ~14-16px */
+.sb-name {
+  font-family: var(--fm);
   font-weight: 600;
-  color: var(--esc-white);
-  letter-spacing: 0.5px;
+  font-size: clamp(11px, 1.3vw, 15px);
+  color: #ffffff;
+  letter-spacing: 0.3px;
   flex: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  /* Лёгкая тень как на ТВ-графике */
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
 }
 
-/* Балл от текущего голосующего — слева от итога */
-.sb-anim-point {
-  font-family: var(--font-main);
+/* ─── БАЛЛ ТЕКУЩЕГО ГОЛОСУЮЩЕГО ─── */
+/* На скриншоте: зелёное число стоит ПЕРЕД итоговым счётом */
+.sb-awarded {
+  font-family: var(--fm);
   font-weight: 700;
   text-align: right;
-  min-width: 22px;
-  animation: point-pop 0.4s cubic-bezier(0.17, 0.67, 0.38, 1.5);
+  flex-shrink: 0;
+  animation: award-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-/* 1-8 баллов — зелёные (как на скриншоте) */
-.sb-anim-point-small {
-  color: #4ade5a;
-  font-size: clamp(13px, 1.5vw, 19px);
-  text-shadow: 0 0 10px rgba(74, 222, 90, 0.6);
-}
-/* 10 и 12 — яркие белые/золотые крупные */
-.sb-anim-point-big {
-  color: #ffe14d;
-  font-size: clamp(14px, 1.7vw, 22px);
-  text-shadow: 0 0 14px rgba(255, 220, 60, 0.8);
-}
-@keyframes point-pop {
+@keyframes award-pop {
   0% {
-    transform: scale(2);
+    transform: scale(0);
     opacity: 0;
   }
-  60% {
-    transform: scale(1.2);
+  100% {
+    transform: scale(1);
     opacity: 1;
   }
-  100% {
-    transform: scale(1);
-  }
 }
 
-/* Общий счёт справа */
-.sb-anim-score {
-  font-family: var(--font-main);
-  font-size: clamp(14px, 1.7vw, 22px);
+/* 1–8 баллов: зелёный, маленький (как на скриншоте Malta=7, Romania=5...) */
+.sb-awarded-small {
+  font-size: clamp(12px, 1.4vw, 16px);
+  color: #4cff6e;
+  text-shadow: 0 0 8px rgba(76, 255, 110, 0.6);
+  min-width: 18px;
+}
+
+/* 10 и 12 баллов: белый/яркий, чуть крупнее */
+.sb-awarded-big {
+  font-size: clamp(13px, 1.5vw, 17px);
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  min-width: 22px;
+}
+
+/* ─── ОБЩИЙ СЧЁТ ─── */
+/* На скриншоте: белый, жирный, правее всего, самый заметный */
+.sb-score {
+  font-family: var(--fm);
   font-weight: 700;
-  color: var(--esc-white);
-  min-width: 42px;
+  font-size: clamp(13px, 1.6vw, 18px);
+  color: #ffffff;
   text-align: right;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  min-width: 38px;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
 }
-.sb-anim-score-flash {
-  animation: score-pop 0.5s cubic-bezier(0.17, 0.67, 0.38, 1.5);
+
+/* Вспышка счёта при получении балла */
+.sb-score-flash {
+  animation: score-flash 0.45s ease;
 }
-@keyframes score-pop {
+@keyframes score-flash {
   0% {
-    transform: scale(1.8);
-    color: #ffe14d;
+    color: #f5c800;
+    transform: scale(1.5);
   }
   100% {
+    color: #ffffff;
     transform: scale(1);
-    color: #fff;
   }
 }
 
-/* ===== ШАРИКИ СПРАВА (как 10 и 12 на скриншоте) ===== */
-.esc-balls {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+/* ─── ФОТО-КРУЖОК ГОЛОСУЮЩЕГО (справа от таблицы) ─── */
+/* На скриншоте: большой круг с портретом, синяя рамка */
+.esc-photo-wrap {
   flex-shrink: 0;
-  align-items: center;
+  display: flex;
+  align-items: flex-start;
 }
-.esc-ball {
-  width: 46px;
-  height: 46px;
+
+.esc-photo {
+  width: clamp(90px, 12vw, 140px);
+  height: clamp(90px, 12vw, 140px);
   border-radius: 50%;
+  background:
+    radial-gradient(
+      circle at 35% 28%,
+      rgba(255, 255, 255, 0.4) 0%,
+      transparent 50%
+    ),
+    radial-gradient(circle at 60% 65%, #1a4090, #0a2060);
+  border: 3px solid rgba(150, 200, 255, 0.6);
+  box-shadow:
+    0 0 30px rgba(80, 150, 255, 0.5),
+    inset 0 2px 8px rgba(255, 255, 255, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-main);
-  font-size: 15px;
-  font-weight: 700;
-  color: rgba(180, 210, 255, 0.3);
-  background:
-    radial-gradient(
-      circle at 35% 30%,
-      rgba(255, 255, 255, 0.25),
-      transparent 50%
-    ),
-    rgba(30, 60, 130, 0.4);
-  border: 1.5px solid rgba(120, 160, 230, 0.25);
-  transition: all 0.3s ease;
-}
-.ball-given {
-  background:
-    radial-gradient(
-      circle at 35% 30%,
-      rgba(255, 255, 255, 0.3),
-      transparent 50%
-    ),
-    radial-gradient(circle at 50% 60%, #3a6bc8, #1a3a80);
-  border-color: rgba(150, 190, 255, 0.5);
-  color: rgba(200, 225, 255, 0.55);
-}
-.ball-current {
-  width: 56px;
-  height: 56px;
-  font-size: 22px;
-  background:
-    radial-gradient(
-      circle at 35% 28%,
-      rgba(255, 255, 255, 0.6),
-      transparent 45%
-    ),
-    radial-gradient(circle at 50% 60%, #66aaff, #1a4090);
-  border: 2px solid rgba(180, 215, 255, 0.85);
-  color: #fff;
-  box-shadow:
-    0 0 26px rgba(90, 160, 255, 0.7),
-    0 0 50px rgba(50, 110, 255, 0.35),
-    inset 0 2px 6px rgba(255, 255, 255, 0.4);
-  animation: ball-pulse 1.3s ease-in-out infinite alternate;
-}
-.ball-twelve-current {
-  background:
-    radial-gradient(
-      circle at 35% 28%,
-      rgba(255, 255, 255, 0.7),
-      transparent 45%
-    ),
-    radial-gradient(circle at 50% 60%, #ffd700, #ff8800) !important;
-  border-color: #ffe680 !important;
-  color: #5a3000 !important;
-  box-shadow:
-    0 0 32px rgba(255, 200, 0, 0.85),
-    inset 0 2px 6px rgba(255, 255, 255, 0.5) !important;
-}
-@keyframes ball-pulse {
-  from {
-    transform: scale(1);
-  }
-  to {
-    transform: scale(1.08);
-  }
+  overflow: hidden;
 }
 
-/* ===== ИМЯ ГОЛОСУЮЩЕГО ВНИЗУ (FRANCE style) ===== */
-.esc-voter-bar {
+.esc-photo-letter {
+  font-family: var(--fm);
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* ─── НИЖНЯЯ ПОЛОСА ─── */
+/* На скриншоте: флаг + имя голосующего СЛЕВА, шарики СПРАВА */
+.esc-bottom {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   z-index: 10;
-  background: linear-gradient(180deg, transparent, rgba(2, 8, 38, 0.85) 40%);
-  padding: 24px 32px 22px;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
+  padding: 10px 40px 18px;
+  /* Нет явного фона — прозрачно, как на скриншоте */
+  pointer-events: none;
 }
-.esc-voter-left {
+
+/* Блок с флагом и именем — левый нижний угол */
+.esc-voter-block {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
+  pointer-events: none;
 }
-/* Кружок-аватар с буквой */
-.esc-voter-avatar {
-  width: clamp(44px, 7vw, 68px);
-  height: clamp(44px, 7vw, 68px);
+
+/* Большой флаг-кружок как на скриншоте (France с флагом) */
+.esc-voter-flag {
+  width: clamp(50px, 8vw, 80px);
+  height: clamp(50px, 8vw, 80px);
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      circle at 35% 28%,
+      rgba(255, 255, 255, 0.55) 0%,
+      rgba(255, 255, 255, 0.05) 40%,
+      transparent 55%
+    ),
+    radial-gradient(circle at 55% 65%, #1a4090, #0a2060);
+  border: 2px solid rgba(180, 215, 255, 0.7);
+  box-shadow:
+    0 0 28px rgba(80, 140, 255, 0.6),
+    inset 0 2px 6px rgba(255, 255, 255, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.esc-voter-flag-letter {
+  font-family: var(--fm);
+  font-size: clamp(22px, 4vw, 34px);
+  font-weight: 700;
+  color: #fff;
+}
+
+/* Имя голосующего — большое белое как "FRANCE" на скриншоте */
+.esc-voter-name {
+  font-family: var(--fm);
+  font-size: clamp(28px, 5vw, 58px);
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: #ffffff;
+  text-shadow: 1px 2px 8px rgba(0, 0, 0, 0.7);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* ─── ШАРИКИ С БАЛЛАМИ (правый нижний угол) ─── */
+/* На скриншоте: стеклянные пузыри, "10" большой, "12" поменьше правее */
+.esc-bubbles {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  pointer-events: none;
+}
+
+/* Базовый шарик */
+.esc-bubble {
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-main);
-  font-size: clamp(22px, 4vw, 36px);
+  font-family: var(--fm);
   font-weight: 700;
-  color: #fff;
+  color: rgba(150, 200, 255, 0.55);
+  /* Стеклянный вид как на скриншоте */
   background:
     radial-gradient(
-      circle at 35% 28%,
-      rgba(255, 255, 255, 0.55),
-      transparent 50%
+      circle at 38% 30%,
+      rgba(255, 255, 255, 0.3) 0%,
+      rgba(255, 255, 255, 0.05) 45%,
+      transparent 60%
     ),
-    radial-gradient(circle at 50% 60%, #4488dd, #1a3a90);
-  border: 2px solid rgba(180, 215, 255, 0.7);
-  box-shadow:
-    0 0 24px rgba(80, 150, 255, 0.5),
-    inset 0 2px 6px rgba(255, 255, 255, 0.3);
-  flex-shrink: 0;
+    radial-gradient(
+      circle at 55% 65%,
+      rgba(30, 80, 200, 0.5),
+      rgba(10, 30, 120, 0.7)
+    );
+  border: 1.5px solid rgba(140, 190, 255, 0.35);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
 }
-.esc-voter-name {
-  font-family: var(--font-main);
-  font-size: clamp(24px, 5vw, 56px);
-  font-weight: 700;
-  letter-spacing: 4px;
-  color: var(--esc-white);
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
-  line-height: 1;
-}
-.esc-voter-right {
-  display: flex;
-  align-items: center;
-}
-.esc-voter-progress {
-  font-family: var(--font-main);
+
+/* Маленькие шарики (уже розданные) */
+.esc-bubble {
+  width: 44px;
+  height: 44px;
   font-size: 16px;
-  color: var(--esc-silver);
-  opacity: 0.5;
-  letter-spacing: 2px;
-  white-space: nowrap;
 }
-.esc-next-btn {
-  font-family: var(--font-main);
+.bubble-done {
+  color: rgba(180, 215, 255, 0.45);
+  background:
+    radial-gradient(
+      circle at 38% 30%,
+      rgba(255, 255, 255, 0.35),
+      transparent 55%
+    ),
+    radial-gradient(circle at 55% 65%, #2a5ab8, #102060);
+  border-color: rgba(150, 195, 255, 0.5);
+}
+
+/* Текущий активный шарик — большой синий (как "10" на скриншоте) */
+.bubble-now {
+  width: 70px !important;
+  height: 70px !important;
+  font-size: 28px !important;
+  color: #c8e0ff !important;
+  background:
+    radial-gradient(
+      circle at 38% 28%,
+      rgba(255, 255, 255, 0.55) 0%,
+      rgba(255, 255, 255, 0.1) 40%,
+      transparent 55%
+    ),
+    radial-gradient(circle at 55% 65%, #3a7edd, #1a3d90) !important;
+  border: 2px solid rgba(180, 220, 255, 0.8) !important;
+  box-shadow:
+    0 0 28px rgba(80, 150, 255, 0.6),
+    inset 0 3px 8px rgba(255, 255, 255, 0.3) !important;
+  animation: bubble-glow 1.4s ease-in-out infinite alternate;
+}
+
+@keyframes bubble-glow {
+  from {
+    box-shadow:
+      0 0 28px rgba(80, 150, 255, 0.6),
+      inset 0 3px 8px rgba(255, 255, 255, 0.3);
+  }
+  to {
+    box-shadow:
+      0 0 44px rgba(80, 150, 255, 0.9),
+      inset 0 3px 8px rgba(255, 255, 255, 0.4);
+  }
+}
+
+/* 12 — следующий после текущего, чуть меньше текущего */
+.bubble-12 {
+  width: 50px;
+  height: 50px;
+  font-size: 18px;
+  color: rgba(180, 215, 255, 0.6);
+}
+
+/* ─── ПОДСКАЗКА / КНОПКА ─── */
+.esc-hint {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  font-family: var(--fm);
+  font-size: clamp(14px, 2vw, 18px);
+  color: rgba(200, 220, 255, 0.85);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+  letter-spacing: 1px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.esc-hint strong {
+  pointer-events: none;
+}
+
+.esc-next {
+  font-family: var(--fm);
   font-size: 15px;
   letter-spacing: 2px;
-  padding: 12px 28px;
-  background: linear-gradient(135deg, #00c87a, #00a060);
+  padding: 11px 26px;
+  background: linear-gradient(135deg, #00c87a, #009060);
   color: #fff;
   font-weight: 700;
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  transition: all 0.2s;
   box-shadow: 0 0 18px rgba(0, 200, 120, 0.45);
+  pointer-events: all;
+  transition: all 0.2s;
 }
-.esc-next-btn:hover {
+.esc-next:hover {
   transform: translateY(-1px);
   box-shadow: 0 0 30px rgba(0, 200, 120, 0.7);
 }
 
-/* ===== RESULTS ===== */
-.results-screen {
-  position: relative;
-  z-index: 1;
+/* ══ RESULTS ════════════════════════════════════ */
+.results-wrap {
   min-height: 100vh;
+  background: radial-gradient(ellipse at 50% 0%, #0a2080 0%, #020b2e 70%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -848,175 +823,161 @@ body,
 }
 .results-header {
   text-align: center;
-  padding: 40px 20px 22px;
+  padding: 36px 20px 20px;
   width: 100%;
 }
-.res-stars {
-  font-size: 16px;
+.results-stars {
+  color: #f5c800;
   letter-spacing: 10px;
-  color: var(--esc-gold);
-  margin-bottom: 10px;
-  animation: pulse-gold 2.5s infinite;
+  font-size: 16px;
+  margin-bottom: 8px;
 }
-.res-title {
-  font-family: var(--font-main);
-  font-size: clamp(24px, 6vw, 54px);
+.results-title {
+  font-family: var(--fm);
+  font-size: clamp(24px, 6vw, 52px);
   font-weight: 700;
   letter-spacing: 5px;
-  color: #fff;
-  text-shadow: 0 0 26px rgba(245, 200, 0, 0.4);
+  text-shadow: 0 0 24px rgba(245, 200, 0, 0.4);
 }
-.res-subtitle {
-  font-family: var(--font-main);
-  font-size: 12px;
+.results-sub {
+  font-family: var(--fm);
+  font-size: 13px;
   letter-spacing: 5px;
-  color: var(--esc-gold);
-  margin-top: 5px;
+  color: #f5c800;
+  margin-top: 4px;
   opacity: 0.8;
 }
-.podium-wrap {
+
+.results-podium {
   display: flex;
   align-items: flex-end;
   justify-content: center;
   gap: 6px;
-  margin: 16px 0 26px;
+  margin: 16px 0 24px;
   width: 100%;
-  max-width: 620px;
+  max-width: 580px;
 }
 .podium-item {
   display: flex;
   flex-direction: column;
   align-items: center;
   flex: 1;
-  max-width: 180px;
+  max-width: 170px;
 }
-.pod-name {
-  font-family: var(--font-main);
+.podium-name {
+  font-family: var(--fm);
   font-size: clamp(10px, 2vw, 13px);
   font-weight: 600;
-  color: #fff;
   text-align: center;
   margin-bottom: 3px;
   line-height: 1.2;
 }
-.pod-score {
-  font-family: var(--font-main);
-  font-size: clamp(18px, 4vw, 34px);
+.podium-score {
+  font-family: var(--fm);
+  font-size: clamp(18px, 4vw, 32px);
   font-weight: 700;
   line-height: 1;
-  margin-bottom: 5px;
-  text-shadow: 0 0 16px currentColor;
+  margin-bottom: 4px;
+  text-shadow: 0 0 14px currentColor;
 }
-.pod-block {
+.podium-block {
   width: 100%;
   border-radius: 4px 4px 0 0;
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding-top: 9px;
+  padding-top: 8px;
 }
-.pod-place {
-  font-family: var(--font-main);
-  font-size: 28px;
-  font-weight: 700;
-}
-.res-table-wrap {
+
+.results-table-wrap {
   width: 100%;
-  max-width: 720px;
+  max-width: 700px;
   background: rgba(7, 26, 94, 0.5);
   border: 1px solid rgba(245, 200, 0, 0.2);
   border-radius: 10px;
   overflow: hidden;
 }
-.res-table {
+.results-table {
   width: 100%;
   border-collapse: collapse;
-  font-family: var(--font-main);
+  font-family: var(--fm);
 }
-.res-table thead tr {
+.results-table thead tr {
   background: #040f3a;
 }
-.res-table th {
-  padding: 10px 13px;
+.results-table th {
+  padding: 10px 12px;
   font-size: 10px;
   letter-spacing: 3px;
-  color: var(--esc-gold);
+  color: #f5c800;
   text-align: center;
   border-bottom: 2px solid rgba(245, 200, 0, 0.3);
 }
-.res-table th:nth-child(2) {
+.results-table th:nth-child(2) {
   text-align: left;
 }
-.res-table tbody tr {
+.results-table tbody tr {
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  transition: background 0.15s;
 }
-.res-table tbody tr:hover {
+.results-table tbody tr:hover {
   background: rgba(255, 255, 255, 0.04) !important;
 }
-.res-top-row td {
+.rt-top td {
   font-weight: 600;
 }
-.res-td-pos {
+.rt-pos {
   text-align: center;
   font-size: 14px;
   padding: 8px 10px;
-  width: 46px;
-  color: var(--esc-silver);
+  width: 44px;
 }
-.res-td-name {
+.rt-name {
   font-size: 13px;
-  color: #fff;
-  padding: 8px 13px;
+  padding: 8px 12px;
   text-align: left;
 }
-.res-td-score {
+.rt-score {
   text-align: center;
   padding: 8px;
-  width: 70px;
+  width: 68px;
 }
-.res-score-pill {
-  display: inline-block;
-  font-size: 18px;
+.rt-pill {
+  font-size: 17px;
   font-weight: 700;
-  color: #fff;
 }
-.res-top-row .res-score-pill {
-  color: var(--esc-gold);
-  text-shadow: 0 0 10px rgba(245, 200, 0, 0.5);
+.rt-top .rt-pill {
+  color: #f5c800;
+  text-shadow: 0 0 8px rgba(245, 200, 0, 0.5);
 }
-.res-td-12,
-.res-td-10 {
+.rt-12,
+.rt-10 {
   text-align: center;
-  width: 54px;
+  width: 50px;
   padding: 8px;
-  color: rgba(200, 216, 255, 0.5);
   font-size: 12px;
+  color: rgba(200, 216, 255, 0.5);
 }
-.res-12-badge {
-  color: var(--esc-gold);
+.rt-12b {
+  color: #f5c800;
   font-weight: 700;
 }
-.res-10-badge {
-  color: var(--esc-cyan);
+.rt-10b {
+  color: #00d4ff;
 }
-.res-footer {
-  margin-top: 34px;
-}
-.res-reset-btn {
-  font-family: var(--font-main);
+.results-reset {
+  margin-top: 32px;
+  font-family: var(--fm);
   font-size: 14px;
   letter-spacing: 4px;
-  padding: 12px 38px;
+  padding: 12px 36px;
   background: transparent;
-  border: 2px solid var(--esc-gold);
-  color: var(--esc-gold);
+  border: 2px solid #f5c800;
+  color: #f5c800;
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
 }
-.res-reset-btn:hover {
-  background: var(--esc-gold);
+.results-reset:hover {
+  background: #f5c800;
   color: #000;
-  box-shadow: 0 0 26px rgba(245, 200, 0, 0.4);
 }
