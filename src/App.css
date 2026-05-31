@@ -480,8 +480,8 @@ body,
   max-width: 1020px;
 }
 
-/* ===== ТАБЛИЦА 2 КОЛОНКИ (как на скриншоте) ===== */
-.sb2-wrap {
+/* ===== ANIMATED SCOREBOARD 2 КОЛОНКИ ===== */
+.sb-animated-wrap {
   flex: 1;
   display: flex;
   gap: 0;
@@ -492,46 +492,62 @@ body,
   backdrop-filter: blur(8px);
   box-shadow: 0 8px 48px rgba(0, 0, 0, 0.65);
 }
-.sb2-col {
+
+.sb-animated-col {
   flex: 1;
-  display: flex;
-  flex-direction: column;
+  position: relative; /* ключ для абсолютных строк */
+  min-height: 100px;
 }
-.sb2-divider {
+
+.sb-animated-divider {
   width: 1px;
   background: rgba(255, 255, 255, 0.12);
   flex-shrink: 0;
 }
 
-.sb2-row {
+/* Каждая строка — абсолютно позиционирована */
+/* CSS transition на top — вот что создаёт анимацию перемещения */
+.sb-anim-row {
+  position: absolute;
+  left: 0;
+  right: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 6px 16px;
+  padding: 0 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-  transition: background 0.35s ease;
-  min-height: 34px;
-  gap: 8px;
+  /* ПЛАВНОЕ ПЕРЕМЕЩЕНИЕ — transition на top */
+  transition:
+    top 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.4s ease;
+  overflow: hidden;
 }
-.sb2-row:last-child {
-  border-bottom: none;
+
+.sb-anim-row:nth-child(even) {
+  background: rgba(255, 255, 255, 0.02);
 }
-.sb2-row-highlight {
-  background: rgba(245, 200, 0, 0.18) !important;
-  animation: row-hl-flash 0.45s ease;
+
+/* Подсветка строки когда получила баллы */
+.sb-anim-highlighted {
+  background: rgba(245, 200, 0, 0.2) !important;
+  animation: row-hl-burst 1.5s ease forwards;
 }
-@keyframes row-hl-flash {
+
+@keyframes row-hl-burst {
   0% {
     background: rgba(245, 200, 0, 0.55);
   }
+  30% {
+    background: rgba(245, 200, 0, 0.35);
+  }
   100% {
-    background: rgba(245, 200, 0, 0.18);
+    background: rgba(245, 200, 0, 0.08);
   }
 }
 
-.sb2-name {
+.sb-anim-name {
   font-family: var(--font-main);
-  font-size: clamp(12px, 1.3vw, 17px);
+  font-size: clamp(11px, 1.25vw, 16px);
   font-weight: 500;
   color: var(--esc-white);
   letter-spacing: 0.5px;
@@ -540,24 +556,33 @@ body,
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.sb2-score {
+
+.sb-anim-score {
   font-family: var(--font-main);
-  font-size: clamp(14px, 1.7vw, 20px);
+  font-size: clamp(13px, 1.6vw, 20px);
   font-weight: 700;
   color: var(--esc-white);
-  min-width: 34px;
+  min-width: 36px;
   text-align: right;
-  transition: color 0.3s;
 }
-.sb2-score-flash {
+
+/* Анимация числа при получении балла */
+.sb-anim-score-flash {
   color: var(--esc-gold);
-  text-shadow: 0 0 14px rgba(245, 200, 0, 0.8);
-  animation: score-pop 0.4s ease;
+  text-shadow: 0 0 16px rgba(245, 200, 0, 0.9);
+  animation: score-pop 0.5s cubic-bezier(0.17, 0.67, 0.38, 1.5) forwards;
 }
+
 @keyframes score-pop {
   0% {
-    transform: scale(1.7);
-    color: #fff;
+    transform: scale(2.2);
+    color: #ffffff;
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.3);
+    color: var(--esc-gold);
+    opacity: 1;
   }
   100% {
     transform: scale(1);
