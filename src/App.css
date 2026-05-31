@@ -442,10 +442,10 @@ body,
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 20px 16px 200px;
+  padding: 40px 16px 160px;
 }
 
-/* Зелёно-синий фон как на видео */
+/* Зелёно-синий волнистый фон как на скриншоте Евровидения */
 .esc-bg-gradient {
   position: fixed;
   inset: 0;
@@ -453,21 +453,44 @@ body,
   pointer-events: none;
   background:
     radial-gradient(
-      ellipse at 75% 55%,
-      rgba(0, 170, 70, 0.4) 0%,
+      ellipse at 85% 18%,
+      rgba(60, 200, 110, 0.55) 0%,
+      transparent 42%
+    ),
+    radial-gradient(
+      ellipse at 90% 55%,
+      rgba(40, 160, 90, 0.4) 0%,
+      transparent 45%
+    ),
+    radial-gradient(
+      ellipse at 12% 75%,
+      rgba(30, 90, 220, 0.5) 0%,
       transparent 50%
     ),
     radial-gradient(
-      ellipse at 25% 45%,
-      rgba(0, 80, 200, 0.45) 0%,
-      transparent 50%
+      ellipse at 50% 110%,
+      rgba(20, 60, 190, 0.65) 0%,
+      transparent 60%
     ),
-    radial-gradient(
-      ellipse at 50% 100%,
-      rgba(0, 40, 160, 0.6) 0%,
-      transparent 55%
-    ),
-    linear-gradient(160deg, #020b2e 0%, #041a60 50%, #020b2e 100%);
+    linear-gradient(150deg, #062a8f 0%, #0a1f6e 45%, #051850 100%);
+}
+
+/* Подсказка вверху */
+.esc-top-hint {
+  position: relative;
+  z-index: 2;
+  font-family: var(--font-main);
+  font-size: clamp(13px, 2vw, 18px);
+  letter-spacing: 1px;
+  color: var(--esc-silver);
+  margin-bottom: 18px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+.esc-top-hint-pts {
+  color: var(--esc-gold);
+  font-size: 1.4em;
+  font-weight: 700;
+  text-shadow: 0 0 12px rgba(245, 200, 0, 0.7);
 }
 
 .esc-center {
@@ -475,389 +498,342 @@ body,
   z-index: 1;
   display: flex;
   align-items: flex-start;
-  gap: 14px;
+  gap: 22px;
   width: 100%;
-  max-width: 1020px;
+  max-width: 1080px;
 }
 
-/* ===== ANIMATED SCOREBOARD 2 КОЛОНКИ ===== */
+/* ===== ГЛЯНЦЕВАЯ ТАБЛИЦА (как на скриншоте Евровидения) ===== */
 .sb-animated-wrap {
   flex: 1;
   display: flex;
   gap: 0;
-  background: rgba(4, 15, 70, 0.85);
-  border: 1.5px solid rgba(255, 255, 255, 0.18);
-  border-radius: 3px;
-  overflow: hidden;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 8px 48px rgba(0, 0, 0, 0.65);
+  padding: 14px 10px;
+  background: linear-gradient(
+    180deg,
+    rgba(40, 90, 200, 0.55) 0%,
+    rgba(10, 35, 110, 0.85) 100%
+  );
+  border: 1px solid rgba(140, 180, 255, 0.4);
+  border-radius: 14px;
+  box-shadow:
+    0 12px 50px rgba(0, 0, 0, 0.6),
+    inset 0 1px 2px rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(4px);
 }
 
 .sb-animated-col {
   flex: 1;
-  position: relative; /* ключ для абсолютных строк */
+  position: relative;
   min-height: 100px;
 }
 
 .sb-animated-divider {
   width: 1px;
-  background: rgba(255, 255, 255, 0.12);
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgba(255, 255, 255, 0.25),
+    transparent
+  );
   flex-shrink: 0;
+  margin: 0 6px;
 }
 
-/* Каждая строка — абсолютно позиционирована */
-/* CSS transition на top — вот что создаёт анимацию перемещения */
+/* Строка — абсолютная позиция, transition:top для плавного перемещения */
 .sb-anim-row {
   position: absolute;
   left: 0;
   right: 0;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-  /* ПЛАВНОЕ ПЕРЕМЕЩЕНИЕ — transition на top */
+  padding: 0 12px;
+  gap: 8px;
+  border-radius: 6px;
   transition:
-    top 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+    top 0.6s cubic-bezier(0.34, 1.2, 0.45, 1),
     background 0.4s ease;
-  overflow: hidden;
 }
 
-.sb-anim-row:nth-child(even) {
-  background: rgba(255, 255, 255, 0.02);
+.sb-anim-clickable {
+  cursor: pointer;
+}
+.sb-anim-clickable:hover {
+  background: rgba(120, 170, 255, 0.28);
+  box-shadow: inset 0 0 0 1px rgba(160, 200, 255, 0.5);
+}
+.sb-anim-disabled {
+  cursor: default;
+  opacity: 0.92;
 }
 
-/* Подсветка строки когда получила баллы */
+/* Подсветка строки получившей баллы */
 .sb-anim-highlighted {
-  background: rgba(245, 200, 0, 0.2) !important;
-  animation: row-hl-burst 1.5s ease forwards;
+  background: rgba(120, 175, 255, 0.32) !important;
+  box-shadow: inset 0 0 0 1px rgba(180, 215, 255, 0.6);
+  animation: row-hl-burst 1.2s ease forwards;
 }
-
 @keyframes row-hl-burst {
   0% {
-    background: rgba(245, 200, 0, 0.55);
-  }
-  30% {
-    background: rgba(245, 200, 0, 0.35);
+    background: rgba(160, 200, 255, 0.55);
   }
   100% {
-    background: rgba(245, 200, 0, 0.08);
+    background: rgba(120, 175, 255, 0.22);
   }
+}
+
+/* Кружок-флаг слева как на скриншоте */
+.sb-anim-flag {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background:
+    radial-gradient(
+      circle at 35% 30%,
+      #fff 0%,
+      rgba(255, 255, 255, 0.4) 30%,
+      transparent 55%
+    ),
+    linear-gradient(135deg, #5588dd, #2255aa);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 .sb-anim-name {
   font-family: var(--font-main);
-  font-size: clamp(11px, 1.25vw, 16px);
-  font-weight: 500;
+  font-size: clamp(12px, 1.35vw, 18px);
+  font-weight: 600;
   color: var(--esc-white);
   letter-spacing: 0.5px;
   flex: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-.sb-anim-score {
+/* Балл от текущего голосующего — слева от итога */
+.sb-anim-point {
   font-family: var(--font-main);
-  font-size: clamp(13px, 1.6vw, 20px);
   font-weight: 700;
-  color: var(--esc-white);
-  min-width: 36px;
   text-align: right;
+  min-width: 22px;
+  animation: point-pop 0.4s cubic-bezier(0.17, 0.67, 0.38, 1.5);
 }
-
-/* Анимация числа при получении балла */
-.sb-anim-score-flash {
-  color: var(--esc-gold);
-  text-shadow: 0 0 16px rgba(245, 200, 0, 0.9);
-  animation: score-pop 0.5s cubic-bezier(0.17, 0.67, 0.38, 1.5) forwards;
+/* 1-8 баллов — зелёные (как на скриншоте) */
+.sb-anim-point-small {
+  color: #4ade5a;
+  font-size: clamp(13px, 1.5vw, 19px);
+  text-shadow: 0 0 10px rgba(74, 222, 90, 0.6);
 }
-
-@keyframes score-pop {
+/* 10 и 12 — яркие белые/золотые крупные */
+.sb-anim-point-big {
+  color: #ffe14d;
+  font-size: clamp(14px, 1.7vw, 22px);
+  text-shadow: 0 0 14px rgba(255, 220, 60, 0.8);
+}
+@keyframes point-pop {
   0% {
-    transform: scale(2.2);
-    color: #ffffff;
-    opacity: 0.5;
+    transform: scale(2);
+    opacity: 0;
   }
-  50% {
-    transform: scale(1.3);
-    color: var(--esc-gold);
+  60% {
+    transform: scale(1.2);
     opacity: 1;
   }
   100% {
     transform: scale(1);
-    color: var(--esc-gold);
   }
 }
 
-/* ===== ШАРИКИ СПРАВА ===== */
+/* Общий счёт справа */
+.sb-anim-score {
+  font-family: var(--font-main);
+  font-size: clamp(14px, 1.7vw, 22px);
+  font-weight: 700;
+  color: var(--esc-white);
+  min-width: 42px;
+  text-align: right;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+.sb-anim-score-flash {
+  animation: score-pop 0.5s cubic-bezier(0.17, 0.67, 0.38, 1.5);
+}
+@keyframes score-pop {
+  0% {
+    transform: scale(1.8);
+    color: #ffe14d;
+  }
+  100% {
+    transform: scale(1);
+    color: #fff;
+  }
+}
+
+/* ===== ШАРИКИ СПРАВА (как 10 и 12 на скриншоте) ===== */
 .esc-balls {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
   flex-shrink: 0;
+  align-items: center;
 }
 .esc-ball {
-  width: 42px;
-  height: 42px;
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-main);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.22);
-  background: rgba(255, 255, 255, 0.05);
-  border: 2px solid rgba(255, 255, 255, 0.08);
+  color: rgba(180, 210, 255, 0.3);
+  background:
+    radial-gradient(
+      circle at 35% 30%,
+      rgba(255, 255, 255, 0.25),
+      transparent 50%
+    ),
+    rgba(30, 60, 130, 0.4);
+  border: 1.5px solid rgba(120, 160, 230, 0.25);
   transition: all 0.3s ease;
 }
 .ball-given {
-  background: rgba(10, 30, 100, 0.75);
-  border-color: rgba(100, 150, 255, 0.35);
-  color: rgba(180, 210, 255, 0.45);
+  background:
+    radial-gradient(
+      circle at 35% 30%,
+      rgba(255, 255, 255, 0.3),
+      transparent 50%
+    ),
+    radial-gradient(circle at 50% 60%, #3a6bc8, #1a3a80);
+  border-color: rgba(150, 190, 255, 0.5);
+  color: rgba(200, 225, 255, 0.55);
 }
 .ball-current {
-  background: radial-gradient(circle at 35% 35%, #4488ff, #0a1f6e);
-  border: 2px solid rgba(150, 200, 255, 0.75);
+  width: 56px;
+  height: 56px;
+  font-size: 22px;
+  background:
+    radial-gradient(
+      circle at 35% 28%,
+      rgba(255, 255, 255, 0.6),
+      transparent 45%
+    ),
+    radial-gradient(circle at 50% 60%, #66aaff, #1a4090);
+  border: 2px solid rgba(180, 215, 255, 0.85);
   color: #fff;
-  font-size: 16px;
   box-shadow:
-    0 0 22px rgba(80, 150, 255, 0.65),
-    0 0 44px rgba(40, 100, 255, 0.3);
-  animation: ball-pulse 1.2s ease-in-out infinite alternate;
+    0 0 26px rgba(90, 160, 255, 0.7),
+    0 0 50px rgba(50, 110, 255, 0.35),
+    inset 0 2px 6px rgba(255, 255, 255, 0.4);
+  animation: ball-pulse 1.3s ease-in-out infinite alternate;
 }
-/* Шарик 12 баллов — золотой */
 .ball-twelve-current {
-  background: radial-gradient(circle at 35% 35%, #ffd700, #ff8800) !important;
-  border-color: #ffd700 !important;
-  color: #000 !important;
-  box-shadow: 0 0 30px rgba(255, 200, 0, 0.85) !important;
+  background:
+    radial-gradient(
+      circle at 35% 28%,
+      rgba(255, 255, 255, 0.7),
+      transparent 45%
+    ),
+    radial-gradient(circle at 50% 60%, #ffd700, #ff8800) !important;
+  border-color: #ffe680 !important;
+  color: #5a3000 !important;
+  box-shadow:
+    0 0 32px rgba(255, 200, 0, 0.85),
+    inset 0 2px 6px rgba(255, 255, 255, 0.5) !important;
 }
 @keyframes ball-pulse {
   from {
     transform: scale(1);
   }
   to {
-    transform: scale(1.1);
+    transform: scale(1.08);
   }
 }
 
-/* ===== ИМЯ ГОЛОСУЮЩЕГО ВНИЗУ (BULGARIA style) ===== */
+/* ===== ИМЯ ГОЛОСУЮЩЕГО ВНИЗУ (FRANCE style) ===== */
 .esc-voter-bar {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   z-index: 10;
-  background: rgba(2, 8, 38, 0.94);
-  border-top: 2px solid rgba(245, 200, 0, 0.28);
-  padding: 13px 28px 16px;
+  background: linear-gradient(180deg, transparent, rgba(2, 8, 38, 0.85) 40%);
+  padding: 24px 32px 22px;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
+.esc-voter-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+/* Кружок-аватар с буквой */
+.esc-voter-avatar {
+  width: clamp(44px, 7vw, 68px);
+  height: clamp(44px, 7vw, 68px);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-main);
+  font-size: clamp(22px, 4vw, 36px);
+  font-weight: 700;
+  color: #fff;
+  background:
+    radial-gradient(
+      circle at 35% 28%,
+      rgba(255, 255, 255, 0.55),
+      transparent 50%
+    ),
+    radial-gradient(circle at 50% 60%, #4488dd, #1a3a90);
+  border: 2px solid rgba(180, 215, 255, 0.7);
+  box-shadow:
+    0 0 24px rgba(80, 150, 255, 0.5),
+    inset 0 2px 6px rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
+}
 .esc-voter-name {
   font-family: var(--font-main);
-  font-size: clamp(22px, 5vw, 54px);
+  font-size: clamp(24px, 5vw, 56px);
   font-weight: 700;
-  letter-spacing: 5px;
+  letter-spacing: 4px;
   color: var(--esc-white);
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
   line-height: 1;
+}
+.esc-voter-right {
+  display: flex;
+  align-items: center;
 }
 .esc-voter-progress {
   font-family: var(--font-main);
-  font-size: 15px;
+  font-size: 16px;
   color: var(--esc-silver);
-  opacity: 0.45;
+  opacity: 0.5;
   letter-spacing: 2px;
   white-space: nowrap;
-}
-
-/* ===== ПАНЕЛЬ ПРИСУЖДЕНИЯ ===== */
-.esc-award-panel {
-  position: fixed;
-  bottom: 86px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  background: rgba(4, 12, 55, 0.96);
-  border: 1px solid rgba(245, 200, 0, 0.4);
-  border-radius: 8px;
-  padding: 10px 18px;
-  backdrop-filter: blur(12px);
-  box-shadow: 0 4px 28px rgba(0, 0, 0, 0.55);
-  white-space: nowrap;
-}
-.esc-award-info {
-  font-family: var(--font-main);
-  font-size: 15px;
-  color: var(--esc-silver);
-  letter-spacing: 1px;
-}
-.esc-award-pts {
-  color: var(--esc-gold);
-  font-size: 22px;
-  font-weight: 700;
-  margin: 0 3px;
-  text-shadow: 0 0 10px rgba(245, 200, 0, 0.6);
-}
-.esc-pick-btn {
-  font-family: var(--font-main);
-  font-size: 13px;
-  letter-spacing: 2px;
-  padding: 9px 22px;
-  background: linear-gradient(135deg, #f5c800, #ff8800);
-  color: #000;
-  font-weight: 700;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 0 14px rgba(245, 200, 0, 0.4);
-}
-.esc-pick-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 0 26px rgba(245, 200, 0, 0.7);
 }
 .esc-next-btn {
   font-family: var(--font-main);
-  font-size: 13px;
+  font-size: 15px;
   letter-spacing: 2px;
-  padding: 9px 22px;
+  padding: 12px 28px;
   background: linear-gradient(135deg, #00c87a, #00a060);
   color: #fff;
   font-weight: 700;
   border: none;
-  border-radius: 5px;
+  border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 0 14px rgba(0, 200, 120, 0.4);
+  box-shadow: 0 0 18px rgba(0, 200, 120, 0.45);
 }
 .esc-next-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 0 26px rgba(0, 200, 120, 0.7);
-}
-
-/* ===== МОДАЛЬНЫЙ ВЫБОР ===== */
-.esc-picker-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 200;
-  background: rgba(0, 0, 0, 0.78);
-  backdrop-filter: blur(5px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: fade-in 0.18s ease;
-}
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-.esc-picker {
-  background: #061540;
-  border: 1.5px solid rgba(245, 200, 0, 0.45);
-  border-radius: 10px;
-  padding: 22px;
-  width: 90%;
-  max-width: 500px;
-  max-height: 80vh;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
-  animation: picker-pop 0.22s cubic-bezier(0.17, 0.67, 0.38, 1.3);
-}
-@keyframes picker-pop {
-  from {
-    transform: scale(0.88);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-.esc-picker-title {
-  font-family: var(--font-main);
-  font-size: 17px;
-  letter-spacing: 2px;
-  color: var(--esc-silver);
-  text-align: center;
-}
-.esc-picker-pts {
-  color: var(--esc-gold);
-  font-size: 24px;
-  font-weight: 700;
-  text-shadow: 0 0 12px rgba(245, 200, 0, 0.7);
-}
-.esc-picker-list {
-  overflow-y: auto;
-  max-height: 50vh;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(245, 200, 0, 0.3) transparent;
-}
-.esc-picker-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 9px 14px;
-  border-radius: 5px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  cursor: pointer;
-  transition: all 0.14s;
-  gap: 10px;
-}
-.esc-picker-row:hover {
-  background: rgba(245, 200, 0, 0.15);
-  border-color: rgba(245, 200, 0, 0.4);
-  transform: translateX(4px);
-}
-.esc-picker-name {
-  font-family: var(--font-main);
-  font-size: 14px;
-  color: #fff;
-  letter-spacing: 1px;
-  flex: 1;
-}
-.esc-picker-score {
-  font-family: var(--font-main);
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--esc-silver);
-  min-width: 28px;
-  text-align: right;
-}
-.esc-picker-cancel {
-  font-family: var(--font-main);
-  font-size: 12px;
-  letter-spacing: 2px;
-  padding: 7px 18px;
-  background: transparent;
-  border: 1px solid rgba(255, 50, 50, 0.4);
-  color: rgba(255, 100, 100, 0.7);
-  border-radius: 5px;
-  cursor: pointer;
-  transition: all 0.2s;
-  align-self: center;
-}
-.esc-picker-cancel:hover {
-  background: rgba(255, 50, 50, 0.15);
-  border-color: var(--esc-red);
-  color: var(--esc-red);
+  box-shadow: 0 0 30px rgba(0, 200, 120, 0.7);
 }
 
 /* ===== RESULTS ===== */

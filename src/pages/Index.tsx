@@ -46,7 +46,13 @@ function getInitialState(): GameState {
 function loadState(): GameState {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) return JSON.parse(saved);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      // Валидация структуры — иначе старые/битые данные ломают рендер
+      if (parsed && Array.isArray(parsed.participants) && parsed.scores && typeof parsed.scores === "object") {
+        return { ...getInitialState(), ...parsed };
+      }
+    }
   } catch (_e) { /* ignore */ }
   return getInitialState();
 }
@@ -56,8 +62,9 @@ function saveState(s: GameState) {
 }
 
 function sortParticipants(participants: string[], scores: Record<string, number>): string[] {
-  return [...participants].sort((a, b) => {
-    const diff = (scores[b] || 0) - (scores[a] || 0);
+  const s = scores || {};
+  return [...(participants || [])].sort((a, b) => {
+    const diff = (s[b] || 0) - (s[a] || 0);
     return diff !== 0 ? diff : a.localeCompare(b, "ru");
   });
 }
@@ -163,23 +170,25 @@ function TwelveScreen({ from, to, onContinue }: { from: string; to: string; onCo
 }
 
 // ─────────────────────────────────────────────
-// ANIMATED SCOREBOARD
-// Строки позиционируются абсолютно, position:top = index * ROW_H
-// При изменении порядка — CSS transition двигает строку плавно
+// ANIMATED SCOREBOARD — точная копия дизайна Евровидения 2005
+// Строки абсолютно позиционированы, transition:top двигает их плавно
+// В строке: ИМЯ ... [балл от голосующего] [общий счёт]
 // ─────────────────────────────────────────────
 interface RowState {
   name: string;
   score: number;
-  col: 0 | 1;       // 0=левая, 1=правая колонка
-  rowInCol: number;  // позиция внутри колонки
+  col: 0 | 1;
+  rowInCol: number;
+  awardedPoints: number; // балл присуждённый текущим голосующим (0 = нет)
   highlighted: boolean;
-  flashScore: boolean;
 }
 
-function AnimatedScoreboard({ participants, scores, highlightName, flashKey }: {
+function AnimatedScoreboard({ participants, scores, currentVotes, onPick, pickable, flashKey }: {
   participants: string[];
   scores: Record<string, number>;
-  highlightName: string;
+  currentVotes: Record<string, number>;
+  onPick: (name: string) => void;
+  pickable: (name: string) => boolean;
   flashKey: number;
 }) {
   const sorted = sortParticipants(participants, scores);
@@ -193,39 +202,51 @@ function AnimatedScoreboard({ participants, scores, highlightName, flashKey }: {
       score: scores[name] || 0,
       col,
       rowInCol,
-      highlighted: name === highlightName,
-      flashScore: name === highlightName,
+      awardedPoints: currentVotes[name] || 0,
+      highlighted: !!currentVotes[name],
     };
   });
 
   const colCount = Math.max(half, sorted.length - half);
 
-  const renderRow = (row: RowState) => (
-    <div
-      key={row.name}
-      className={`sb-anim-row ${row.highlighted ? "sb-anim-highlighted" : ""}`}
-      style={{ top: row.rowInCol * ROW_H, height: ROW_H }}
-    >
-      <span className="sb-anim-name">{row.name.toUpperCase()}</span>
-      <span
-        key={row.flashScore ? `flash-${flashKey}` : row.name}
-        className={`sb-anim-score ${row.flashScore ? "sb-anim-score-flash" : ""}`}
+  const renderRow = (row: RowState) => {
+    const canPick = pickable(row.name);
+    // Зелёный для 1-8, белый/яркий для 10 и 12 (как на скриншоте)
+    const pointClass = row.awardedPoints >= 10 ? "sb-anim-point-big" : "sb-anim-point-small";
+    return (
+      <div
+        key={row.name}
+        className={[
+          "sb-anim-row",
+          row.highlighted ? "sb-anim-highlighted" : "",
+          canPick ? "sb-anim-clickable" : "sb-anim-disabled",
+        ].join(" ").trim()}
+        style={{ top: row.rowInCol * ROW_H, height: ROW_H }}
+        onClick={() => canPick && onPick(row.name)}
       >
-        {row.score > 0 ? row.score : ""}
-      </span>
-    </div>
-  );
+        <span className="sb-anim-flag" />
+        <span className="sb-anim-name">{row.name.toUpperCase()}</span>
+        {row.awardedPoints > 0 && (
+          <span key={`pt-${flashKey}-${row.name}`} className={`sb-anim-point ${pointClass}`}>
+            {row.awardedPoints}
+          </span>
+        )}
+        <span
+          key={row.highlighted ? `flash-${flashKey}` : row.name}
+          className={`sb-anim-score ${row.highlighted ? "sb-anim-score-flash" : ""}`}
+        >
+          {row.score > 0 ? row.score : ""}
+        </span>
+      </div>
+    );
+  };
 
   return (
     <div className="sb-animated-wrap">
-      {/* Левая колонка */}
       <div className="sb-animated-col" style={{ height: colCount * ROW_H }}>
         {rows.filter(r => r.col === 0).map(renderRow)}
       </div>
-
       <div className="sb-animated-divider" />
-
-      {/* Правая колонка */}
       <div className="sb-animated-col" style={{ height: colCount * ROW_H }}>
         {rows.filter(r => r.col === 1).map(renderRow)}
       </div>
@@ -246,44 +267,48 @@ function VotingScreen({ state, onAwardPoint, onFinishVoter }: {
   const allPointsGiven = state.pointStep >= VOTE_ORDER.length;
   const alreadyVoted = new Set(Object.keys(state.currentVotes));
 
-  // Последний присуждённый — для подсветки
   const entries = Object.entries(state.currentVotes);
   const lastRecipient = entries.length > 0 ? entries[entries.length - 1][0] : "";
 
-  // Список для выбора (не сам голосующий, ещё не голосовали за них)
-  const sortedForPick = sortParticipants(state.participants, state.scores)
-    .filter(p => p !== currentVoter && !alreadyVoted.has(p));
-
-  const [showPicker, setShowPicker] = useState(false);
-  const [animHighlight, setAnimHighlight] = useState("");
   const [flashKey, setFlashKey] = useState(0);
 
-  // Когда меняется lastRecipient — подсвечиваем строку на 1.5с, запускаем flash счёта
   const prevRecipient = useRef("");
   useEffect(() => {
     if (lastRecipient && lastRecipient !== prevRecipient.current) {
       prevRecipient.current = lastRecipient;
-      setAnimHighlight(lastRecipient);
       setFlashKey(k => k + 1);
-      const t = setTimeout(() => setAnimHighlight(""), 1500);
-      return () => clearTimeout(t);
     }
   }, [lastRecipient]);
+
+  // Можно ли выбрать участника: не сам голосующий, ещё не голосовали, баллы ещё остались
+  const pickable = (name: string) =>
+    !allPointsGiven && name !== currentVoter && !alreadyVoted.has(name);
 
   return (
     <div className="esc-voting-wrap">
       <div className="esc-bg-gradient" />
 
+      {/* Подсказка вверху какой балл присуждаем */}
+      {!allPointsGiven && (
+        <div className="esc-top-hint">
+          Нажмите на участника, чтобы дать{" "}
+          <span className="esc-top-hint-pts">{currentPointValue}</span>{" "}
+          {currentPointValue === 1 ? "балл" : currentPointValue < 5 ? "балла" : "баллов"}
+        </div>
+      )}
+
       <div className="esc-center">
-        {/* ТАБЛИЦА */}
+        {/* ТАБЛИЦА — клик прямо по строке */}
         <AnimatedScoreboard
           participants={state.participants}
           scores={state.scores}
-          highlightName={animHighlight}
+          currentVotes={state.currentVotes}
+          onPick={onAwardPoint}
+          pickable={pickable}
           flashKey={flashKey}
         />
 
-        {/* ШАРИКИ */}
+        {/* ШАРИКИ с баллами */}
         <div className="esc-balls">
           {VOTE_ORDER.map((pts, idx) => {
             const given = state.pointStep > idx;
@@ -306,55 +331,22 @@ function VotingScreen({ state, onAwardPoint, onFinishVoter }: {
         </div>
       </div>
 
-      {/* Имя голосующего — внизу как BULGARIA */}
+      {/* Имя голосующего — внизу с аватаром как FRANCE */}
       <div className="esc-voter-bar">
-        <div className="esc-voter-name">{currentVoter.toUpperCase()}</div>
-        <div className="esc-voter-progress">{state.usedVoters.length + 1} / {state.voters.length}</div>
+        <div className="esc-voter-left">
+          <div className="esc-voter-avatar">{currentVoter.charAt(0)}</div>
+          <div className="esc-voter-name">{currentVoter.toUpperCase()}</div>
+        </div>
+        <div className="esc-voter-right">
+          {allPointsGiven ? (
+            <button className="esc-next-btn" onClick={onFinishVoter}>
+              СЛЕДУЮЩИЙ →
+            </button>
+          ) : (
+            <div className="esc-voter-progress">{state.usedVoters.length + 1} / {state.voters.length}</div>
+          )}
+        </div>
       </div>
-
-      {/* Панель присуждения */}
-      {!allPointsGiven ? (
-        <div className="esc-award-panel">
-          <div className="esc-award-info">
-            Присудить <span className="esc-award-pts">{currentPointValue}</span>
-            {" "}{currentPointValue === 1 ? "балл" : currentPointValue < 5 ? "балла" : "баллов"}
-          </div>
-          <button className="esc-pick-btn" onClick={() => setShowPicker(true)}>
-            ВЫБРАТЬ УЧАСТНИКА →
-          </button>
-        </div>
-      ) : (
-        <div className="esc-award-panel">
-          <div className="esc-award-info" style={{ color: "#00e676" }}>✓ Все баллы розданы</div>
-          <button className="esc-next-btn" onClick={onFinishVoter}>
-            СЛЕДУЮЩИЙ ГОЛОСУЮЩИЙ →
-          </button>
-        </div>
-      )}
-
-      {/* Модальный выбор участника */}
-      {showPicker && (
-        <div className="esc-picker-overlay" onClick={() => setShowPicker(false)}>
-          <div className="esc-picker" onClick={e => e.stopPropagation()}>
-            <div className="esc-picker-title">
-              КТО ПОЛУЧАЕТ <span className="esc-picker-pts">{currentPointValue}</span>{" "}
-              {currentPointValue === 1 ? "БАЛЛ" : currentPointValue < 5 ? "БАЛЛА" : "БАЛЛОВ"}?
-            </div>
-            <div className="esc-picker-list">
-              {sortedForPick.map(name => (
-                <div key={name} className="esc-picker-row" onClick={() => {
-                  onAwardPoint(name);
-                  setShowPicker(false);
-                }}>
-                  <span className="esc-picker-name">{name.toUpperCase()}</span>
-                  <span className="esc-picker-score">{state.scores[name] || 0}</span>
-                </div>
-              ))}
-            </div>
-            <button className="esc-picker-cancel" onClick={() => setShowPicker(false)}>ОТМЕНА</button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
