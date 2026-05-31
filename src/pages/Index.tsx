@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from "react";
-// useEffect used in TwelveScreen
 
 const ALL_PARTICIPANTS = [
   "Маша Сергеева", "Руслан Шлем", "Руслан Хмелинин", "Даня Шустов",
@@ -11,6 +10,7 @@ const ALL_PARTICIPANTS = [
   "Артем Дорохов", "Максим Дунин", "Антон Викторович", "Влад Варанкин"
 ];
 
+// Евровидение: баллы объявляются от меньшего к большему
 const VOTE_ORDER = [1, 2, 3, 4, 5, 6, 7, 8, 10, 12];
 
 type Phase = "setup" | "voting" | "twelve" | "twelve_then_results" | "results";
@@ -23,20 +23,23 @@ interface GameState {
   voters: string[];
   scores: Record<string, number>;
   currentVoterIndex: number;
+  // currentVotes: все распределённые баллы текущего голосующего
   currentVotes: Record<string, number>;
+  // pointStep: индекс в VOTE_ORDER — какой балл сейчас объявляем (0=1pt, ..., 9=12pt)
+  pointStep: number;
   usedVoters: string[];
   twelveFrom: string;
   twelveTo: string;
   voteHistory: VoteEntry[];
 }
 
-const STORAGE_KEY = "eurovision2005_state";
+const STORAGE_KEY = "eurovision2005_v2";
 
 function getInitialState(): GameState {
   return {
     phase: "setup", participants: [], voters: [], scores: {},
-    currentVoterIndex: 0, currentVotes: {}, usedVoters: [],
-    twelveFrom: "", twelveTo: "", voteHistory: [],
+    currentVoterIndex: 0, currentVotes: {}, pointStep: 0,
+    usedVoters: [], twelveFrom: "", twelveTo: "", voteHistory: [],
   };
 }
 
@@ -45,16 +48,18 @@ function loadState(): GameState {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) return JSON.parse(saved);
   } catch (_e) {
-    // ignore parse errors
+    // ignore
   }
   return getInitialState();
 }
 
-function saveState(state: GameState) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+function saveState(s: GameState) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
 }
 
-// ---- SETUP SCREEN ----
+// ─────────────────────────────────────────────
+// SETUP SCREEN
+// ─────────────────────────────────────────────
 function SetupScreen({ onStart }: { onStart: (p: string[], v: string[]) => void }) {
   const [selP, setSelP] = useState<string[]>([...ALL_PARTICIPANTS]);
   const [selV, setSelV] = useState<string[]>([...ALL_PARTICIPANTS]);
@@ -70,12 +75,12 @@ function SetupScreen({ onStart }: { onStart: (p: string[], v: string[]) => void 
         <div className="esc-main-year">SONG CONTEST 2005</div>
         <div className="esc-main-city">КИЕВ • УКРАИНА</div>
       </div>
-
       <div className="setup-columns">
         <div className="setup-col">
           <div className="setup-col-header">
             <span>🎤 УЧАСТНИКИ КОНКУРСА</span>
-            <button className="select-all-btn" onClick={() => setSelP(selP.length === ALL_PARTICIPANTS.length ? [] : [...ALL_PARTICIPANTS])}>
+            <button className="select-all-btn"
+              onClick={() => setSelP(selP.length === ALL_PARTICIPANTS.length ? [] : [...ALL_PARTICIPANTS])}>
               {selP.length === ALL_PARTICIPANTS.length ? "Снять все" : "Все"}
             </button>
           </div>
@@ -87,15 +92,15 @@ function SetupScreen({ onStart }: { onStart: (p: string[], v: string[]) => void 
             ))}
           </div>
         </div>
-
         <div className="setup-col">
           <div className="setup-col-header">
             <span>🗳️ ГОЛОСУЮЩИЕ ЖЮРИ</span>
-            <button className="select-all-btn" onClick={() => setSelV(selV.length === ALL_PARTICIPANTS.length ? [] : [...ALL_PARTICIPANTS])}>
+            <button className="select-all-btn"
+              onClick={() => setSelV(selV.length === ALL_PARTICIPANTS.length ? [] : [...ALL_PARTICIPANTS])}>
               {selV.length === ALL_PARTICIPANTS.length ? "Снять все" : "Все"}
             </button>
           </div>
-          <p className="setup-hint">Можно добавить голосующих не из числа участников</p>
+          <p className="setup-hint">Голосующие могут не входить в список участников</p>
           <div className="names-grid">
             {ALL_PARTICIPANTS.map(name => (
               <div key={name} className={`name-chip ${selV.includes(name) ? "chip-active-v" : ""}`} onClick={() => toggleV(name)}>
@@ -105,7 +110,6 @@ function SetupScreen({ onStart }: { onStart: (p: string[], v: string[]) => void 
           </div>
         </div>
       </div>
-
       <div className="setup-footer">
         <div className="setup-counts">
           <div className="count-badge"><span className="count-num">{selP.length}</span><span className="count-label">участников</span></div>
@@ -120,11 +124,12 @@ function SetupScreen({ onStart }: { onStart: (p: string[], v: string[]) => void 
   );
 }
 
-// ---- 12 POINTS SCREEN ----
+// ─────────────────────────────────────────────
+// 12 POINTS SCREEN
+// ─────────────────────────────────────────────
 function TwelveScreen({ from, to, onContinue }: { from: string; to: string; onContinue: () => void }) {
   const [vis, setVis] = useState(false);
   useEffect(() => { const t = setTimeout(() => setVis(true), 80); return () => clearTimeout(t); }, []);
-
   return (
     <div className={`twelve-screen ${vis ? "twelve-visible" : ""}`}>
       <div className="twelve-stars-bg">
@@ -153,131 +158,159 @@ function TwelveScreen({ from, to, onContinue }: { from: string; to: string; onCo
   );
 }
 
-// ---- VOTING SCREEN ----
-function VotingScreen({ state, onVote, onFinishVoter }: {
-  state: GameState; onVote: (r: string, p: number) => void; onFinishVoter: () => void;
+// ─────────────────────────────────────────────
+// SCOREBOARD — 2 колонки как на видео
+// ─────────────────────────────────────────────
+function Scoreboard({ participants, scores, lastRecipient, lastPoints }: {
+  participants: string[];
+  scores: Record<string, number>;
+  lastRecipient: string;
+  lastPoints: number;
 }) {
-  const currentVoter = state.voters[state.currentVoterIndex];
-  const sortedP = [...state.participants].sort((a, b) => (state.scores[b] || 0) - (state.scores[a] || 0));
-  const usedPts = Object.values(state.currentVotes);
-  const availPts = VOTE_ORDER.filter(p => !usedPts.includes(p));
-  const allDone = availPts.length === 0;
+  // Сортируем по убыванию очков
+  const sorted = [...participants].sort((a, b) => {
+    const diff = (scores[b] || 0) - (scores[a] || 0);
+    if (diff !== 0) return diff;
+    return a.localeCompare(b, "ru");
+  });
+
+  const half = Math.ceil(sorted.length / 2);
+  const left = sorted.slice(0, half);
+  const right = sorted.slice(half);
+
+  const renderRow = (name: string) => {
+    const score = scores[name] || 0;
+    const isHighlighted = name === lastRecipient;
+    return (
+      <div key={name} className={`sb2-row ${isHighlighted ? "sb2-row-highlight" : ""}`}>
+        <span className="sb2-name">{name.toUpperCase()}</span>
+        <span className={`sb2-score ${isHighlighted ? "sb2-score-flash" : ""}`}>
+          {score > 0 ? score : ""}
+        </span>
+      </div>
+    );
+  };
 
   return (
-    <div className="voting-screen">
-      <div className="voting-header">
-        <div className="vh-logo">ESC<span>2005</span></div>
-        <div className="vh-voter">
-          <div className="vh-voter-label">ГОЛОСУЕТ</div>
-          <div className="vh-voter-name">{currentVoter}</div>
-        </div>
-        <div className="vh-progress">
-          <div className="vh-progress-num">{state.usedVoters.length + 1}</div>
-          <div className="vh-progress-of">из {state.voters.length}</div>
-        </div>
-      </div>
-
-      <div className="voting-body">
-        {/* SCOREBOARD */}
-        <div className="scoreboard-wrap">
-          <div className="scoreboard-title">ТАБЛИЦА ОЧКОВ</div>
-          <div className="scoreboard-scroll">
-            <table className="scoreboard-table">
-              <thead>
-                <tr>
-                  <th className="sb-th-pos">#</th>
-                  <th className="sb-th-name">УЧАСТНИК</th>
-                  <th className="sb-th-total">ИТОГО</th>
-                  {state.usedVoters.slice(-8).map((v, i) => (
-                    <th key={i} className="sb-th-v" title={v}>{v.split(" ")[0].substring(0, 5)}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {sortedP.map((p, idx) => {
-                  const score = state.scores[p] || 0;
-                  const myVote = state.currentVotes[p];
-                  return (
-                    <tr key={p} className={`sb-row ${myVote === 12 ? "sb-row-twelve" : myVote ? "sb-row-voted" : ""}`}
-                      style={{ backgroundColor: idx % 2 === 0 ? "#0d2464" : "#091b4e" }}>
-                      <td className="sb-td-pos">{idx + 1}</td>
-                      <td className="sb-td-name">
-                        {p}
-                        {myVote && <span className={`sb-vote-tag ${myVote === 12 ? "tag-12" : myVote >= 8 ? "tag-high" : "tag-low"}`}>+{myVote}</span>}
-                      </td>
-                      <td className="sb-td-total">
-                        <span className={`total-num ${score === 0 ? "total-zero" : ""}`}>{score || "—"}</span>
-                      </td>
-                      {state.usedVoters.slice(-8).map((voter, vi) => {
-                        const h = state.voteHistory.find(x => x.voter === voter && x.recipient === p);
-                        return (
-                          <td key={vi} className="sb-td-v">
-                            {h ? <span className={`hist-pt ${h.points === 12 ? "hp-12" : h.points >= 8 ? "hp-hi" : ""}`}>{h.points}</span> : ""}
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* VOTE PANEL */}
-        <div className="vote-panel">
-          <div className="vp-header">
-            <div className="vp-title">ПРИСУДИТЕ БАЛЛЫ</div>
-            <div className="vp-voter">{currentVoter}</div>
-          </div>
-
-          <div className="vp-pts-row">
-            {VOTE_ORDER.map(p => (
-              <div key={p} className={`vp-pt-chip ${availPts.includes(p) ? "vp-pt-avail" : "vp-pt-used"} ${p === 12 ? "vp-pt-12" : ""}`}>
-                {p}
-              </div>
-            ))}
-          </div>
-
-          <div className="vp-list">
-            {sortedP.map(p => {
-              const myVote = state.currentVotes[p];
-              const isMe = p === currentVoter;
-              return (
-                <div key={p} className={`vp-row ${isMe ? "vp-row-me" : ""} ${myVote ? "vp-row-done" : ""}`}>
-                  <span className="vp-pname">{p}</span>
-                  {isMe ? (
-                    <span className="vp-me-badge">нельзя голосовать</span>
-                  ) : myVote ? (
-                    <div className="vp-done-group">
-                      <span className={`vp-done-num ${myVote === 12 ? "dn-12" : myVote >= 8 ? "dn-hi" : "dn-lo"}`}>{myVote}</span>
-                      <button className="vp-cancel" onClick={() => onVote(p, 0)}>✕</button>
-                    </div>
-                  ) : (
-                    <div className="vp-pts-btns">
-                      {availPts.map(pt => (
-                        <button key={pt} onClick={() => onVote(p, pt)}
-                          className={`vp-btn ${pt === 12 ? "vp-btn-12" : pt >= 8 ? "vp-btn-hi" : "vp-btn-lo"}`}>
-                          {pt}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          <button className={`vp-finish ${allDone ? "vp-finish-ready" : ""}`} disabled={!allDone} onClick={onFinishVoter}>
-            {allDone ? "✓ ПЕРЕДАТЬ ГОЛОС →" : `Осталось: ${availPts.join(" · ")}`}
-          </button>
-        </div>
-      </div>
+    <div className="sb2-wrap">
+      <div className="sb2-col">{left.map(renderRow)}</div>
+      <div className="sb2-divider" />
+      <div className="sb2-col">{right.map(renderRow)}</div>
     </div>
   );
 }
 
-// ---- RESULTS ----
+// ─────────────────────────────────────────────
+// VOTING SCREEN — главный экран как на видео
+// ─────────────────────────────────────────────
+function VotingScreen({ state, onAwardPoint, onFinishVoter }: {
+  state: GameState;
+  onAwardPoint: (recipient: string) => void;
+  onFinishVoter: () => void;
+}) {
+  const currentVoter = state.voters[state.currentVoterIndex];
+  const currentPointValue = VOTE_ORDER[state.pointStep]; // балл который сейчас присуждается
+  const allPointsGiven = state.pointStep >= VOTE_ORDER.length;
+
+  // Кому уже дали баллы в этом раунде (нельзя выбрать снова)
+  const alreadyVoted = new Set(Object.keys(state.currentVotes));
+
+  // Последний присуждённый балл и получатель (для подсветки)
+  const lastEntries = Object.entries(state.currentVotes);
+  const lastEntry = lastEntries.length > 0 ? lastEntries[lastEntries.length - 1] : null;
+  const lastRecipient = lastEntry ? lastEntry[0] : "";
+  const lastPoints = lastEntry ? lastEntry[1] : 0;
+
+  // Список участников отсортированных по очкам для выбора
+  const sortedForPick = [...state.participants]
+    .filter(p => p !== currentVoter && !alreadyVoted.has(p))
+    .sort((a, b) => (state.scores[b] || 0) - (state.scores[a] || 0));
+
+  const [showPicker, setShowPicker] = useState(false);
+
+  return (
+    <div className="esc-voting-wrap">
+      {/* Фон в стиле Евровидения */}
+      <div className="esc-bg-gradient" />
+
+      {/* ТАБЛИЦА — центр экрана */}
+      <div className="esc-center">
+        <Scoreboard
+          participants={state.participants}
+          scores={state.scores}
+          lastRecipient={lastRecipient}
+          lastPoints={lastPoints}
+        />
+
+        {/* Шарики с баллами справа (уже розданные + текущий) */}
+        <div className="esc-balls">
+          {VOTE_ORDER.map((pts, idx) => {
+            const given = state.pointStep > idx;
+            const current = state.pointStep === idx && !allPointsGiven;
+            const isTwelve = pts === 12;
+            return (
+              <div key={pts} className={`esc-ball ${given ? "ball-given" : ""} ${current ? "ball-current" : ""} ${current && isTwelve ? "ball-twelve-current" : ""}`}>
+                {pts}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Имя голосующего — внизу крупно как BULGARIA на видео */}
+      <div className="esc-voter-bar">
+        <div className="esc-voter-name">{currentVoter.toUpperCase()}</div>
+        <div className="esc-voter-progress">{state.usedVoters.length + 1} / {state.voters.length}</div>
+      </div>
+
+      {/* Панель присуждения балла */}
+      {!allPointsGiven ? (
+        <div className="esc-award-panel">
+          <div className="esc-award-info">
+            Присудить <span className="esc-award-pts">{currentPointValue}</span> {currentPointValue === 1 ? "балл" : currentPointValue < 5 ? "балла" : "баллов"}
+          </div>
+          <button className="esc-pick-btn" onClick={() => setShowPicker(true)}>
+            ВЫБРАТЬ УЧАСТНИКА →
+          </button>
+        </div>
+      ) : (
+        <div className="esc-award-panel">
+          <div className="esc-award-info">Все баллы розданы</div>
+          <button className="esc-next-btn" onClick={onFinishVoter}>
+            СЛЕДУЮЩИЙ ГОЛОСУЮЩИЙ →
+          </button>
+        </div>
+      )}
+
+      {/* Модальный выбор участника */}
+      {showPicker && (
+        <div className="esc-picker-overlay" onClick={() => setShowPicker(false)}>
+          <div className="esc-picker" onClick={e => e.stopPropagation()}>
+            <div className="esc-picker-title">
+              КТО ПОЛУЧАЕТ <span className="esc-picker-pts">{currentPointValue}</span> {currentPointValue === 1 ? "БАЛЛ" : currentPointValue < 5 ? "БАЛЛА" : "БАЛЛОВ"}?
+            </div>
+            <div className="esc-picker-list">
+              {sortedForPick.map(name => (
+                <div key={name} className="esc-picker-row" onClick={() => {
+                  onAwardPoint(name);
+                  setShowPicker(false);
+                }}>
+                  <span className="esc-picker-name">{name.toUpperCase()}</span>
+                  <span className="esc-picker-score">{state.scores[name] || 0}</span>
+                </div>
+              ))}
+            </div>
+            <button className="esc-picker-cancel" onClick={() => setShowPicker(false)}>ОТМЕНА</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// RESULTS SCREEN
+// ─────────────────────────────────────────────
 function ResultsScreen({ state, onReset }: { state: GameState; onReset: () => void }) {
   const sorted = [...state.participants].sort((a, b) => (state.scores[b] || 0) - (state.scores[a] || 0));
   const twelves: Record<string, number> = {};
@@ -295,7 +328,6 @@ function ResultsScreen({ state, onReset }: { state: GameState; onReset: () => vo
         <h1 className="res-title">ФИНАЛЬНЫЕ РЕЗУЛЬТАТЫ</h1>
         <div className="res-subtitle">EUROVISION SONG CONTEST 2005</div>
       </div>
-
       <div className="podium-wrap">
         {[1, 0, 2].map(i => (
           <div key={i} className={`podium-item pod-${i + 1}`}>
@@ -311,7 +343,6 @@ function ResultsScreen({ state, onReset }: { state: GameState; onReset: () => vo
           </div>
         ))}
       </div>
-
       <div className="res-table-wrap">
         <table className="res-table">
           <thead>
@@ -331,7 +362,6 @@ function ResultsScreen({ state, onReset }: { state: GameState; onReset: () => vo
           </tbody>
         </table>
       </div>
-
       <div className="res-footer">
         <button className="res-reset-btn" onClick={onReset}>★ НОВОЕ ГОЛОСОВАНИЕ ★</button>
       </div>
@@ -339,7 +369,9 @@ function ResultsScreen({ state, onReset }: { state: GameState; onReset: () => vo
   );
 }
 
-// ---- ROOT ----
+// ─────────────────────────────────────────────
+// ROOT
+// ─────────────────────────────────────────────
 export default function Index() {
   const [state, setState] = useState<GameState>(() => loadState());
 
@@ -348,18 +380,26 @@ export default function Index() {
   const handleStart = (participants: string[], voters: string[]) => {
     const scores: Record<string, number> = {};
     participants.forEach(p => { scores[p] = 0; });
-    update({ phase: "voting", participants, voters, scores, currentVoterIndex: 0, currentVotes: {}, usedVoters: [], twelveFrom: "", twelveTo: "", voteHistory: [] });
-  };
-
-  const handleVote = (recipient: string, points: number) => {
-    setState(prev => {
-      const nv = { ...prev.currentVotes };
-      if (points === 0) delete nv[recipient]; else nv[recipient] = points;
-      const updated = { ...prev, currentVotes: nv };
-      saveState(updated); return updated;
+    update({
+      phase: "voting", participants, voters, scores,
+      currentVoterIndex: 0, currentVotes: {}, pointStep: 0,
+      usedVoters: [], twelveFrom: "", twelveTo: "", voteHistory: []
     });
   };
 
+  // Присуждаем текущий балл (VOTE_ORDER[pointStep]) выбранному участнику
+  const handleAwardPoint = (recipient: string) => {
+    setState(prev => {
+      const pts = VOTE_ORDER[prev.pointStep];
+      const newVotes = { ...prev.currentVotes, [recipient]: pts };
+      const newStep = prev.pointStep + 1;
+      const s: GameState = { ...prev, currentVotes: newVotes, pointStep: newStep };
+      saveState(s);
+      return s;
+    });
+  };
+
+  // Завершаем голосование текущего жюри — фиксируем баллы, показываем 12
   const handleFinishVoter = () => {
     setState(prev => {
       const voter = prev.voters[prev.currentVoterIndex];
@@ -372,8 +412,16 @@ export default function Index() {
       const twelveR = Object.entries(prev.currentVotes).find(([, p]) => p === 12)?.[0] || "";
       const nextIdx = prev.currentVoterIndex + 1;
       const isLast = nextIdx >= prev.voters.length;
-      const phase: Phase = twelveR ? (isLast ? "twelve_then_results" : "twelve") : (isLast ? "results" : "voting");
-      const s: GameState = { ...prev, scores: newScores, voteHistory: newHist, usedVoters: [...prev.usedVoters, voter], currentVotes: {}, currentVoterIndex: nextIdx, twelveFrom: voter, twelveTo: twelveR, phase };
+      const phase: Phase = twelveR
+        ? (isLast ? "twelve_then_results" : "twelve")
+        : (isLast ? "results" : "voting");
+      const s: GameState = {
+        ...prev, scores: newScores, voteHistory: newHist,
+        usedVoters: [...prev.usedVoters, voter],
+        currentVotes: {}, pointStep: 0,
+        currentVoterIndex: nextIdx,
+        twelveFrom: voter, twelveTo: twelveR, phase
+      };
       saveState(s); return s;
     });
   };
@@ -400,7 +448,9 @@ export default function Index() {
         ))}
       </div>
       {state.phase === "setup" && <SetupScreen onStart={handleStart} />}
-      {state.phase === "voting" && <VotingScreen state={state} onVote={handleVote} onFinishVoter={handleFinishVoter} />}
+      {state.phase === "voting" && (
+        <VotingScreen state={state} onAwardPoint={handleAwardPoint} onFinishVoter={handleFinishVoter} />
+      )}
       {(state.phase === "twelve" || state.phase === "twelve_then_results") && (
         <TwelveScreen from={state.twelveFrom} to={state.twelveTo} onContinue={handleTwelveCont} />
       )}
